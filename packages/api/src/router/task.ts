@@ -1,5 +1,6 @@
 // Corrected import path for Prisma generated types/enums
 // Import necessary types/enums from Prisma Client
+import type { Prisma } from "@prisma/client";
 // Corrected import paths for internal packages
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -39,6 +40,22 @@ export const taskRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { session } = ctx;
       const userId = session.user.id;
+      const userRole = session.user.role;
+
+      // Check if the task is being assigned to someone else
+      if (input.assignedToId && input.assignedToId !== userId) {
+        // If assigning to someone else, user MUST be an ADMIN
+        if (userRole !== "ADMIN") {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message:
+              "You do not have permission to assign tasks to other users.",
+          });
+        }
+      }
+
+      // If assignedToId is not provided, default to the user creating the task
+      const assignedToId = input.assignedToId ?? userId;
 
       let nextOccurrence: Date | undefined | null = null;
       if (input.isRecurring) {
@@ -64,7 +81,7 @@ export const taskRouter = createTRPCRouter({
       const task = await ctx.prisma.task.create({
         data: {
           ...input,
-          assignedToId: input.assignedToId,
+          assignedToId: assignedToId,
           nextOccurrence: nextOccurrence,
           // createdById: userId, // Add if audit fields are used
         },
@@ -77,14 +94,24 @@ export const taskRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { session } = ctx;
       const userId = session.user.id;
+      const userRole = session.user.role; // Get user role
       const limit = input?.limit ?? 20;
       const cursor = input?.cursor;
 
+      // Define the base query conditions
+      const whereCondition: Prisma.TaskWhereInput = {};
+
+      // If the user is not an admin, only fetch tasks assigned to them
+      if (userRole !== "ADMIN") {
+        whereCondition.assignedToId = userId;
+      }
+
+      // Admins will not have the assignedToId filter applied,
+      // thus fetching all tasks.
+
       const tasks = await ctx.prisma.task.findMany({
         take: limit + 1,
-        where: {
-          assignedToId: userId,
-        },
+        where: whereCondition, // Apply the dynamic where condition
         cursor: cursor ? { id: cursor } : undefined,
         orderBy: {
           createdAt: "desc",
@@ -123,10 +150,12 @@ export const taskRouter = createTRPCRouter({
         throw new TRPCError({ code: "NOT_FOUND", message: "Task not found." });
       }
 
-      if (task.assignedToId !== userId /* && session.user.role !== 'ADMIN' */) {
+      // Allow update if user is the assignee OR if the user is an ADMIN
+      if (task.assignedToId !== userId && session.user.role !== "ADMIN") {
         throw new TRPCError({
           code: "FORBIDDEN",
-          message: "You can only update tasks assigned to you.",
+          message:
+            "You can only update tasks assigned to you or if you are an admin.",
         });
       }
 
@@ -199,10 +228,12 @@ export const taskRouter = createTRPCRouter({
         throw new TRPCError({ code: "NOT_FOUND", message: "Task not found." });
       }
 
-      if (task.assignedToId !== userId /* && session.user.role !== 'ADMIN' */) {
+      // Allow delete if user is the assignee OR if the user is an ADMIN
+      if (task.assignedToId !== userId && session.user.role !== "ADMIN") {
         throw new TRPCError({
           code: "FORBIDDEN",
-          message: "You can only delete tasks assigned to you.",
+          message:
+            "You can only delete tasks assigned to you or if you are an admin.",
         });
       }
 
@@ -213,10 +244,22 @@ export const taskRouter = createTRPCRouter({
   getStats: protectedProcedure.query(async ({ ctx }) => {
     const { session } = ctx;
     const userId = session.user.id;
+    const userRole = session.user.role; // Get user role
+
+    // Define the base query conditions for stats
+    const whereCondition: Prisma.TaskWhereInput = {};
+
+    // If the user is not an admin, only consider tasks assigned to them
+    if (userRole !== "ADMIN") {
+      whereCondition.assignedToId = userId;
+    }
+    // Admins will have an empty where condition here for statusCounts,
+    // considering all tasks.
 
     const statusCounts = await ctx.prisma.task.groupBy({
       by: ["status"],
-      where: { assignedToId: userId },
+      // where: { assignedToId: userId }, // Original code
+      where: whereCondition, // Apply dynamic condition
       _count: { status: true },
     });
 
@@ -226,8 +269,13 @@ export const taskRouter = createTRPCRouter({
     // Prisma groupBy on MongoDB doesn't support grouping by date parts directly.
     // Fetch raw data and aggregate in code.
     const completedTasksRaw = await ctx.prisma.task.findMany({
+      // where: { // Original code
+      //   assignedToId: userId,
+      //   status: "DONE",
+      //   updatedAt: { gte: sevenDaysAgo },
+      // },
       where: {
-        assignedToId: userId,
+        ...whereCondition, // Apply dynamic condition here as well
         status: "DONE",
         updatedAt: { gte: sevenDaysAgo },
       },
