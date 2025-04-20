@@ -1,0 +1,33 @@
+{
+  "name": "@acme/db",
+  "version": "0.1.0",
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "license": "MIT",
+  "scripts": {
+    "clean": "rm -rf .turbo node_modules",
+    "push": "dotenv -e ../../.env -- prisma db push",
+    "generate": "dotenv -e ../../.env -- prisma generate",
+    "studio": "dotenv -e ../../.env -- prisma studio --browser=none",
+    "migrate-prod": "dotenv -e ../../.env -- prisma migrate deploy",
+    "migrate-dev": "dotenv -e ../../.env -- prisma migrate dev",
+    "postinstall": "pnpm prisma generate",
+    "dev": "pnpm studio",
+    "seed": "dotenv -e ../../.env -- prisma db seed",
+    "reset-admin": "dotenv -e ../../.env -- ts-node --compiler-options {\"module\":\"CommonJS\"} --transpile-only reset-admin.ts"
+  },
+  "prisma": {
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} --transpile-only prisma/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.3.1",
+    "prisma-soft-delete-middleware": "^1.1.2"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^8.1.0",
+    "dotenv-cli": "^7.3.0",
+    "prisma": "^5.3.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  }
+}

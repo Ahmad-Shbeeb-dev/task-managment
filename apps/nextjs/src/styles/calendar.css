@@ -1,0 +1,19 @@
+.rbc-event-label {
+  display: none;
+}
+.rbc-event {
+  padding: 0;
+}
+
+.rbc-events-container {
+  width: 100%;
+}
+
+.rbc-timeslot-group {
+  min-height: 100px;
+}
+
+.picker-icon svg:nth-child(2) {
+  display: none !important;
+  width: 0;
+}

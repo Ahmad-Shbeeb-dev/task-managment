@@ -1,0 +1,194 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model VerificationToken {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model PasswordReset {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  code      String   @unique
+  expires   DateTime
+  userId    String   @db.ObjectId
+  User      User     @relation(fields: [userId], references: [id])
+  deleted   Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+// Necessary for Next auth
+model Account {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String   @unique @db.ObjectId
+  type              String
+  provider          String
+  password          String?
+  providerAccountId String?
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  failedSignins     Int?     @default(0)
+  //****Audit****//
+  createdBy         String?  @db.ObjectId
+  updatedBy         String?  @db.ObjectId
+  deleted           Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  //****Relations****//
+  user              User     @relation("UserAccount", fields: [userId], references: [id], onDelete: Cascade)
+  UserCreated       User?    @relation("CreatedBy", fields: [createdBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  UserUpdated       User?    @relation("UpdatedBy", fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([provider, providerAccountId])
+}
+
+// Necessary for Next auth
+model Session {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String   @unique
+  userId       String   @db.ObjectId
+  expires      DateTime
+  //****Audit****//
+  updatedBy    String?  @db.ObjectId
+  deleted      Boolean  @default(false)
+  updatedAt    DateTime @updatedAt
+  createdAt    DateTime @default(now())
+  //****Relations****//
+  user         User     @relation("UserSession", fields: [userId], references: [id], onDelete: Cascade)
+  UserUpdated  User?    @relation("UpdatedBy", fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model User {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  name              String?
+  email             String?   @unique
+  image             String?
+  emailVerified     DateTime?
+  role              Role      @default(USER)
+  notificationToken String?
+  tasks             Task[] // Relation to tasks assigned to this user
+
+  //****Audit****//
+  createdBy                String?            @db.ObjectId
+  updatedBy                String?            @db.ObjectId
+  deleted                  Boolean            @default(false)
+  updatedAt                DateTime?          @updatedAt
+  createdAt                DateTime           @default(now())
+  //****Relations****//
+  Sessions                 Session[]          @relation("UserSession")
+  Accounts                 Account[]          @relation("UserAccount")
+  NotificationsUser        NotificationUser[]
+  PasswordResets           PasswordReset[]
+  //****Audit Relations****//
+  ParentUserUpdated        User?              @relation("UserUpdatedBy", fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  ParentUserCreated        User?              @relation("UserCreatedBy", fields: [createdBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  UsersUpdated             User[]             @relation("UserUpdatedBy")
+  UsersCreated             User[]             @relation("UserCreatedBy")
+  AccountsCreated          Account[]          @relation("CreatedBy")
+  AccountsUpdated          Account[]          @relation("UpdatedBy")
+  SessionsUpdated          Session[]          @relation("UpdatedBy")
+  NotificationsCreated     Notification[]     @relation("CreatedBy")
+  NotificationsUpdated     Notification[]     @relation("UpdatedBy")
+  NotificationsUserCreated NotificationUser[] @relation("CreatedBy")
+  NotificationsUserUpdated NotificationUser[] @relation("UpdatedBy")
+}
+
+model Notification {
+  id                String             @id @default(auto()) @map("_id") @db.ObjectId
+  name              String
+  type              String
+  status            String
+  message           String
+  isRead            Boolean
+  readAt            Boolean
+  priority          String
+  //****Audit****//
+  createdBy         String             @db.ObjectId
+  updatedBy         String             @db.ObjectId
+  deleted           Boolean            @default(false)
+  updatedAt         DateTime           @updatedAt
+  createdAt         DateTime           @default(now())
+  //****Relations****//
+  UserUpdated       User?              @relation("UpdatedBy", fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  UserCreated       User?              @relation("CreatedBy", fields: [createdBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  NotificationsUser NotificationUser[]
+}
+
+model NotificationUser {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  notificationId String       @db.ObjectId
+  userId         String       @db.ObjectId
+  //****Audit****//
+  createdBy      String       @db.ObjectId
+  updatedBy      String       @db.ObjectId
+  deleted        Boolean      @default(false)
+  updatedAt      DateTime     @updatedAt
+  createdAt      DateTime     @default(now())
+  //****Relations****//
+  UserUpdated    User?        @relation("UpdatedBy", fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  UserCreated    User?        @relation("CreatedBy", fields: [createdBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Notification   Notification @relation(fields: [notificationId], references: [id])
+  User           User         @relation(fields: [userId], references: [id])
+}
+
+model Task {
+  id          String       @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  dueDate     DateTime?
+  priority    TaskPriority @default(MEDIUM)
+  status      TaskStatus   @default(TODO)
+
+  isRecurring    Boolean        @default(false)
+  recurringType  RecurringType? // Required if isRecurring is true
+  nextOccurrence DateTime? // Next due date for recurring tasks
+
+  assignedToId String @db.ObjectId
+  assignedTo   User   @relation(fields: [assignedToId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([assignedToId])
+  @@map("tasks")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum RecurringType {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
