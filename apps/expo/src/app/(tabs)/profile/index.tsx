@@ -57,9 +57,7 @@ export default function ProfileScreen() {
 
   const form = useForm<z.infer<typeof updateUserValidation>>({
     values: {
-      address: User?.address ?? "",
       email: User?.email ?? "",
-      contactNumber: User?.contactNumber ?? "",
     },
     resolver: zodResolver(updateUserValidation),
   });
@@ -157,48 +155,6 @@ export default function ProfileScreen() {
             >
               My info
             </Text>
-            <HStack gap="$2" alignItems="center" w="$full">
-              <Text color="#7C7C7C" fontWeight="$light" size="sm" w="40%">
-                Phone Number:
-              </Text>
-              {isEdit ? (
-                <FormControl
-                  size="md"
-                  isInvalid={!!form.formState.errors.contactNumber?.message}
-                  isRequired={true}
-                  w="60%"
-                  px="$2"
-                >
-                  <Input h={28}>
-                    <Controller
-                      name="contactNumber"
-                      control={form.control}
-                      render={({ field }) => (
-                        <InputField
-                          fontWeight="$normal"
-                          size="sm"
-                          color="$black"
-                          onChangeText={(val) => field.onChange(val)}
-                          onBlur={field.onBlur}
-                          type="text"
-                          value={field.value}
-                        />
-                      )}
-                    />
-                  </Input>
-                  <FormControlError>
-                    <FormControlErrorIcon as={AlertCircleIcon} />
-                    <FormControlErrorText>
-                      {form.formState.errors.contactNumber?.message}
-                    </FormControlErrorText>
-                  </FormControlError>
-                </FormControl>
-              ) : (
-                <Text fontWeight="$light" size="sm" color="$black">
-                  {User?.contactNumber}
-                </Text>
-              )}
-            </HStack>
             <HStack gap="$2">
               <Text color="#7C7C7C" fontWeight="$light" size="sm">
                 Email:
@@ -241,60 +197,6 @@ export default function ProfileScreen() {
                 </Text>
               )}
             </HStack>
-            <HStack gap="$2">
-              <Text color="#7C7C7C" fontWeight="$light" size="sm">
-                Address:
-              </Text>
-              {isEdit ? (
-                <FormControl
-                  size="md"
-                  isInvalid={!!form.formState.errors.address?.message}
-                  isRequired={true}
-                  w="60%"
-                  px="$2"
-                >
-                  <Input h={28}>
-                    <Controller
-                      name="address"
-                      control={form.control}
-                      render={({ field }) => (
-                        <InputField
-                          fontWeight="$normal"
-                          size="sm"
-                          color="$black"
-                          onChangeText={(val) => field.onChange(val)}
-                          onBlur={field.onBlur}
-                          type="text"
-                          value={field.value}
-                        />
-                      )}
-                    />
-                  </Input>
-                  <FormControlError>
-                    <FormControlErrorIcon as={AlertCircleIcon} />
-                    <FormControlErrorText>
-                      {form.formState.errors.address?.message}
-                    </FormControlErrorText>
-                  </FormControlError>
-                </FormControl>
-              ) : (
-                <Text fontWeight="$light" size="sm" color="$black">
-                  {User?.address}
-                </Text>
-              )}
-            </HStack>
-            <Text color="#7C7C7C" fontWeight="$light" size="sm">
-              Emergency Contacts:
-            </Text>
-            <VStack w="$full" gap="$1">
-              {User?.Parent?.AllChildren.flatMap(
-                (child) => child.ChildEmergencies,
-              ).map((emergency) => (
-                <Text key={nanoid()} fontWeight="$light" size="sm">
-                  {emergency.name}: {emergency.contactNumber}
-                </Text>
-              ))}
-            </VStack>
           </Center>
 
           {/* Children Cards */}
@@ -319,21 +221,6 @@ export default function ProfileScreen() {
                 m="$4"
                 p="$4"
               >
-                <Text mb="$2" color="$black" fontWeight="$medium" size="sm">
-                  {child.nameEn}
-                </Text>
-                <Text color="#636363" fontWeight="$light" size="xs">
-                  Age:{" "}
-                  {child.dateOfBirth &&
-                    differenceInYears(new Date(), child.dateOfBirth)}
-                </Text>
-                <Text color="#636363" fontWeight="$light" size="xs">
-                  Classes:{" "}
-                  {child.ClassChildren.map(
-                    (classs) => classs.Class.className,
-                  ).join(", ")}
-                </Text>
-
                 <HStack position="relative" justifyContent="flex-end" mt="$1">
                   <ProfileChildCard
                     style={{
