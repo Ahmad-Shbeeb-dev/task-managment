@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useState } from "react"; // Import useState
 import { toast } from "sonner"; // Assuming sonner (or similar) is used for toasts
 
 import type { TaskPriority, TaskStatus } from "@acme/db";
@@ -10,6 +11,7 @@ import { TASK_STATUSES } from "~/utils/constants";
 import { cn } from "~/utils/ui"; // Import cn utility
 
 import { Badge } from "~/components/ui/Badge"; // For displaying priority/status visually
+import { Button } from "~/components/ui/Button"; // Added Button import for Load More
 
 // UI Components
 import {
@@ -19,7 +21,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/Select";
+import { Skeleton } from "~/components/ui/Skeleton"; // Added Skeleton import
+
 import type { TaskOutput } from "~/types";
+
+// Make TASK_STATUSES easily iterable with an 'ALL' option for filtering
+const STATUS_FILTER_OPTIONS = [
+  { value: "ALL", label: "All Statuses" },
+  ...TASK_STATUSES.map((status) => ({
+    value: status,
+    label: status.replace("_", " "),
+  })),
+];
 
 // Renamed from TaskItemPlaceholder and added status update logic
 const TaskItem = ({ task }: { task: TaskOutput }) => {
@@ -27,9 +40,9 @@ const TaskItem = ({ task }: { task: TaskOutput }) => {
 
   const updateTaskStatusMutation = api.task.update.useMutation({
     onSuccess: async () => {
-      toast.success(`Task "${task.title}" status updated!`);
+      toast.success(`Task \"${task.title}\" status updated!`);
       // Invalidate queries to refetch data
-      await utils.task.getAll.invalidate();
+      await utils.task.getAll.invalidate(); // Invalidate all pages
       await utils.task.getStats.invalidate(); // Also invalidate stats if they depend on status
     },
     onError: (error) => {
@@ -120,8 +133,27 @@ const TaskItem = ({ task }: { task: TaskOutput }) => {
   );
 };
 
+// Skeleton component for TaskItem
+const TaskItemSkeleton = () => (
+  <div className="mb-3 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+    <div className="flex items-start justify-between">
+      <Skeleton className="mb-1 h-5 w-3/5" /> {/* Title */}
+      <Skeleton className="h-8 w-[130px]" /> {/* Status Select */}
+    </div>
+    <Skeleton className="mb-3 h-4 w-4/5" /> {/* Description */}
+    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+      <Skeleton className="h-4 w-1/3" /> {/* Due Date */}
+      <Skeleton className="h-5 w-16" /> {/* Priority Badge */}
+      <Skeleton className="h-4 w-1/4" /> {/* Assigned To */}
+    </div>
+  </div>
+);
+
 export function TaskList() {
-  // Fetch tasks using tRPC hook (useInfiniteQuery for pagination/infinite scroll)
+  // State for status filter
+  const [statusFilter, setStatusFilter] = useState<TaskStatus | "ALL">("ALL");
+
+  // Fetch tasks using tRPC hook
   const {
     data,
     isLoading,
@@ -129,64 +161,100 @@ export function TaskList() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    // No need for refetch() explicitly here as the query key changes
   } = api.task.getAll.useInfiniteQuery(
     {
       limit: 10, // Fetch 10 tasks per page
+      // Pass the status filter, converting 'ALL' to undefined for the API
+      status: statusFilter === "ALL" ? undefined : statusFilter,
     },
     {
-      // Check if lastPage exists before accessing nextCursor
       getNextPageParam: (lastPage) => lastPage?.nextCursor,
-      // Optional: Configure staleTime, cacheTime etc.
       staleTime: 5 * 60 * 1000, // 5 minutes
+      // The query key automatically includes the input object.
+      // When statusFilter changes, the query key changes, triggering a refetch.
     },
   );
 
-  if (isLoading) {
-    return (
-      <div className="rounded-lg bg-white p-4 text-center shadow-md">
-        Loading tasks...
-      </div>
-    );
-  }
+  // Handle status filter change
+  const handleStatusFilterChange = (value: string) => {
+    // Type assertion is okay here as values come from our defined options
+    setStatusFilter(value as TaskStatus | "ALL");
+    // No need to manually refetch; the query reruns automatically.
+  };
 
-  if (error) {
-    return (
-      <div className="rounded-lg bg-white p-4 text-red-500 shadow-md">
-        Error loading tasks: {error.message}
-      </div>
-    );
-  }
+  // Combine rendering logic for cleaner return statement
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div>
+          {[...Array(3)].map((_, i) => (
+            <TaskItemSkeleton key={i} />
+          ))}
+        </div>
+      );
+    }
 
-  // Use flatMap for cleaner rendering of pages
-  const allTasks = data?.pages.flatMap((page) => page.tasks) ?? [];
+    if (error) {
+      return (
+        <p className="text-destructive">Error loading tasks: {error.message}</p>
+      );
+    }
 
-  if (allTasks.length === 0) {
+    const allTasks = data?.pages.flatMap((page) => page.tasks) ?? [];
+
+    if (allTasks.length === 0) {
+      return (
+        <p className="text-muted-foreground">
+          {statusFilter === "ALL"
+            ? "No tasks found."
+            : `No tasks found with status \"${statusFilter.replace("_", " ")}\".`}
+        </p>
+      );
+    }
+
     return (
-      <div className="rounded-lg bg-white p-4 shadow-md">
-        <h2 className="mb-4 text-xl font-semibold">My Tasks</h2>No tasks found.
-      </div>
+      <>
+        <div>
+          {allTasks.map((task: TaskOutput) => (
+            <TaskItem key={task.id} task={task} />
+          ))}
+        </div>
+        {hasNextPage && (
+          <div className="mt-4 text-center">
+            <Button
+              variant="outline"
+              onClick={() => fetchNextPage()}
+              disabled={isFetchingNextPage}
+            >
+              {isFetchingNextPage ? "Loading more..." : "Load More"}
+            </Button>
+          </div>
+        )}
+      </>
     );
-  }
+  };
 
   return (
-    <div className="w-full rounded-lg bg-white p-4 shadow-md">
-      <h2 className="mb-4 text-xl font-semibold">My Tasks</h2>
-      <div>
-        {allTasks.map((task: TaskOutput) => (
-          <TaskItem key={task.id} task={task} />
-        ))}
+    <div className="space-y-4">
+      {/* Filter Controls */}
+      <div className="flex justify-end">
+        <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent>
+            {STATUS_FILTER_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
-      {hasNextPage && (
-        <div className="mt-4 text-center">
-          <button
-            onClick={() => fetchNextPage()}
-            disabled={isFetchingNextPage}
-            className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 disabled:opacity-50"
-          >
-            {isFetchingNextPage ? "Loading more..." : "Load More"}
-          </button>
-        </div>
-      )}
+
+      {/* Task List Content */}
+      {renderContent()}
     </div>
   );
 }

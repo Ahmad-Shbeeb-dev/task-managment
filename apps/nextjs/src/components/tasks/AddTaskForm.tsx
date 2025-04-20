@@ -6,6 +6,7 @@ import { IconCalendar } from "@tabler/icons-react";
 import { format } from "date-fns";
 import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 import { api } from "~/utils/api";
@@ -89,7 +90,7 @@ export function AddTaskForm({ onTaskAdded }: AddTaskFormProps) {
     },
   });
 
-  // Fetch users for assignee dropdown - only needed if user is admin
+  // Fetch users for assignee dropdown - only run if user is admin
   const { data: usersData, isLoading: usersLoading } = api.user.getAll.useQuery(
     undefined, // no input
     {
@@ -100,19 +101,17 @@ export function AddTaskForm({ onTaskAdded }: AddTaskFormProps) {
   // tRPC mutation for creating task
   const utils = api.useUtils();
   const createTaskMutation = api.task.create.useMutation({
-    onSuccess: () => {
-      // Invalidate tasks query to refetch the list
+    onSuccess: (data) => {
+      toast.success(`Task "${data.title}" created successfully!`);
       void utils.task.getAll.invalidate();
-      form.reset(); // Reset form after successful submission
-      setIsRecurring(false); // Reset local state too
-      onTaskAdded?.(); // Call the callback if provided (e.g., to close a dialog)
-      // TODO: Add user feedback (e.g., toast notification)
-      console.log("Task created successfully!");
+      void utils.task.getStats.invalidate();
+      form.reset();
+      setIsRecurring(false);
+      onTaskAdded?.();
     },
     onError: (error) => {
-      // TODO: Show error message to user
-      console.error("Error creating task:", error);
-      // Maybe set form error: form.setError("root", { message: error.message })
+      toast.error(`Error creating task: ${error.message}`);
+      form.setError("root", { message: `Submission failed: ${error.message}` });
     },
   });
 
@@ -121,19 +120,18 @@ export function AddTaskForm({ onTaskAdded }: AddTaskFormProps) {
     const finalAssignedToId = isAdmin ? data.assignedToId : userId;
 
     if (!finalAssignedToId) {
-      // Handle case where userId is somehow missing for non-admin (shouldn't happen if logged in)
-      console.error("User ID missing for non-admin task creation.");
-      // TODO: Set a form error
+      toast.error("Assignee information is missing.");
+      form.setError("assignedToId", {
+        message: "Could not determine the assignee.",
+      });
       return;
     }
 
-    // Ensure recurringType is undefined if isRecurring is false
     const submissionData = {
       ...data,
       assignedToId: finalAssignedToId,
       recurringType: data.isRecurring ? data.recurringType : undefined,
     };
-    console.log("Submitting task:", submissionData);
     createTaskMutation.mutate(submissionData);
   }
 
@@ -206,7 +204,6 @@ export function AddTaskForm({ onTaskAdded }: AddTaskFormProps) {
                       mode="single"
                       selected={field.value}
                       onSelect={field.onChange}
-                      // disabled={(date) => date < new Date()} // Optional: disable past dates
                       initialFocus
                     />
                   </PopoverContent>
@@ -246,7 +243,7 @@ export function AddTaskForm({ onTaskAdded }: AddTaskFormProps) {
           />
         </div>
 
-        {/* Assignee - Conditionally Rendered */}
+        {/* Assignee - Conditionally Rendered for Admins */}
         {isAdmin && (
           <FormField
             control={form.control}
@@ -256,28 +253,34 @@ export function AddTaskForm({ onTaskAdded }: AddTaskFormProps) {
                 <FormLabel>Assign To</FormLabel>
                 <Select
                   onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  disabled={usersLoading}
+                  value={field.value}
+                  disabled={usersLoading || createTaskMutation.isLoading}
                 >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue
                         placeholder={
-                          usersLoading ? "Loading users..." : "Select assignee"
+                          usersLoading
+                            ? "Loading users..."
+                            : "Select an assignee"
                         }
                       />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {usersData && usersData.length > 0 ? (
+                    {usersLoading ? (
+                      <SelectItem value="loading" disabled>
+                        Loading...
+                      </SelectItem>
+                    ) : usersData && usersData.length > 0 ? (
                       usersData.map((user) => (
                         <SelectItem key={user.id} value={user.id}>
-                          {user.name ?? user.email ?? user.id}{" "}
+                          {user.name ?? user.email ?? `User ${user.id}`}
                         </SelectItem>
                       ))
                     ) : (
-                      <SelectItem value="" disabled>
-                        {usersLoading ? "Loading..." : "No users found"}
+                      <SelectItem value="no-users" disabled>
+                        No users available to assign
                       </SelectItem>
                     )}
                   </SelectContent>
@@ -299,12 +302,12 @@ export function AddTaskForm({ onTaskAdded }: AddTaskFormProps) {
                   checked={field.value}
                   onCheckedChange={(checked) => {
                     field.onChange(checked);
-                    setIsRecurring(Boolean(checked)); // Update local state
+                    setIsRecurring(Boolean(checked));
                     if (!checked) {
-                      // Reset recurringType if checkbox is unchecked
                       form.setValue("recurringType", undefined);
                     }
                   }}
+                  disabled={createTaskMutation.isLoading}
                 />
               </FormControl>
               <div className="space-y-1 leading-none">
@@ -325,6 +328,7 @@ export function AddTaskForm({ onTaskAdded }: AddTaskFormProps) {
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
+                  disabled={createTaskMutation.isLoading}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -339,8 +343,7 @@ export function AddTaskForm({ onTaskAdded }: AddTaskFormProps) {
                     ))}
                   </SelectContent>
                 </Select>
-                <FormMessage />{" "}
-                {/* Error message for required field will show here */}
+                <FormMessage />
               </FormItem>
             )}
           />

@@ -97,9 +97,13 @@ export const taskRouter = createTRPCRouter({
       const userRole = session.user.role; // Get user role
       const limit = input?.limit ?? 20;
       const cursor = input?.cursor;
+      const statusFilter = input?.status; // Get the status filter
 
       // Define the base query conditions
-      const whereCondition: Prisma.TaskWhereInput = {};
+      const whereCondition: Prisma.TaskWhereInput = {
+        // Apply status filter if provided
+        ...(statusFilter && { status: statusFilter }),
+      };
 
       // If the user is not an admin, only fetch tasks assigned to them
       if (userRole !== "ADMIN") {
@@ -107,7 +111,7 @@ export const taskRouter = createTRPCRouter({
       }
 
       // Admins will not have the assignedToId filter applied,
-      // thus fetching all tasks.
+      // thus fetching all tasks (unless they also provide a status filter).
 
       const tasks = await ctx.prisma.task.findMany({
         take: limit + 1,
