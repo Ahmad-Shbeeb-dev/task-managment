@@ -57,3 +57,6 @@ export type EmployeeAttendancesTableType =
 export type EmployeeDetailsTableType =
   RouterOutputs["employee"]["getEmployees"][number];
 export type EmployeeFormInputsType = z.infer<typeof upsertEmployeeValidation>;
+
+// Infer the output type for a single task
+export type TaskOutput = RouterOutputs["task"]["getAll"]["tasks"][number];

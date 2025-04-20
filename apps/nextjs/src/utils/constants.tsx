@@ -8,7 +8,9 @@ import {
   IconUserCircle,
 } from "@tabler/icons-react";
 
-import type { INavbarLink } from "~/types";
+import type { RecurringType, TaskPriority, TaskStatus } from "@acme/db";
+
+import type { INavbarLink, RoleArray } from "~/types";
 
 export const NAVBAR_LINKS: readonly INavbarLink[] = [
   {
@@ -135,3 +137,12 @@ export const PERIOD_SELECT = [
 ] as const;
 
 export type PeriodSelectIdType = (typeof PERIOD_SELECT)[number]["id"];
+
+export const ROLES: RoleArray = ["ADMIN", "USER"];
+export const TASK_STATUSES: TaskStatus[] = ["TODO", "IN_PROGRESS", "DONE"];
+export const TASK_PRIORITIES: TaskPriority[] = ["LOW", "MEDIUM", "HIGH"];
+export const TASK_RECURRING_TYPES: RecurringType[] = [
+  "DAILY",
+  "WEEKLY",
+  "MONTHLY",
+];

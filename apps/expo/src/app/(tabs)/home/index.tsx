@@ -1,6 +1,6 @@
 import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { HStack, ScrollView, Text, VStack } from "@gluestack-ui/themed";
+import { HStack, ScrollView, Text, View, VStack } from "@gluestack-ui/themed";
 import Calendar from "assets/icons/calendar.svg";
 import Chart from "assets/icons/chart.svg";
 import Event from "assets/icons/event.svg";
@@ -16,6 +16,7 @@ import { HomeCarousel } from "~/components/HomeCarousel";
 import { HomeHeader } from "~/components/HomeHeader";
 import { HomeNewsCard } from "~/components/HomeNewsCard";
 import { SectionLink } from "~/components/SectionLink";
+import { TaskList } from "~/components/tasks/TaskList";
 
 const CARDS = [
   {
@@ -45,7 +46,7 @@ export default function HomeScreen() {
     false;
 
   return (
-    <SafeAreaView style={{ backgroundColor: "#fff" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#f8f9fa" }}>
       <ScrollView>
         <HomeHeader />
         <Text fontSize="$sm" color="#777" ml={22}>
@@ -90,7 +91,7 @@ export default function HomeScreen() {
 
         <HStack px="$4.5" justifyContent="space-between" alignItems="center">
           <VStack>
-            <Text color="$black">Today’s News</Text>
+            <Text color="$black">Today's News</Text>
             <Text size="xs" color="#7C7C7C">
               {format(new Date(), "EEEE, d LLL")}
             </Text>

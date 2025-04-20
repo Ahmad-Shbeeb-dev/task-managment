@@ -1,7 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/restrict-plus-operands */
-import { PrismaClient, Role } from "@prisma/client";
+import {
+  PrismaClient,
+  RecurringType as PrismaRecurringType,
+  TaskPriority as PrismaTaskPriority,
+  TaskStatus as PrismaTaskStatus,
+  Role,
+} from "@prisma/client";
 import { createSoftDeleteMiddleware } from "prisma-soft-delete-middleware";
 
 if (!process.env.DATABASE_URL) {
@@ -18,6 +24,9 @@ export type QueryEvent = {
 };
 
 export type UserRole = Role;
+export type TaskStatus = PrismaTaskStatus;
+export type TaskPriority = PrismaTaskPriority;
+export type RecurringType = PrismaRecurringType;
 
 export const prisma =
   globalForPrisma.prisma ||

@@ -116,7 +116,7 @@ export const userRouter = createTRPCRouter({
       return foundUser;
     }),
 
-  getUsers: protectedProcedureAdmin.query(async ({ ctx }) => {
+  getAll: protectedProcedureAdmin.query(async ({ ctx }) => {
     return ctx.prisma.user.findMany({});
   }),
 

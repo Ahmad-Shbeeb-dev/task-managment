@@ -24,7 +24,7 @@ import {
 import { Input } from "~/components/ui/Input";
 import { Progress } from "~/components/ui/Progress";
 import { useAuth, usePasswordStrength } from "~/hooks";
-import type { Role, RoleArray } from "~/types";
+import type { Role } from "~/types";
 
 type Inputs = z.infer<typeof registerUserValidation>;
 
@@ -35,8 +35,6 @@ interface Props {
   createdBy?: string;
   setDialogOpened?: Dispatch<SetStateAction<boolean>>;
 }
-
-const ROLES: RoleArray = ["ADMIN", "USER"];
 
 export function SignUpForm({
   isSuperAdmin = false,
@@ -55,8 +53,6 @@ export function SignUpForm({
       name: userName,
       password: "",
       confirmPassword: "",
-      address: "",
-      contactNumber: "",
       role: userRole,
       createdBy: createdBy,
       // dateOfBirth: new Date("1900-01-01"),
@@ -182,20 +178,6 @@ export function SignUpForm({
           )}
         /> */}
 
-        {/* Contact Number */}
-        <FormField
-          control={form.control}
-          name="contactNumber"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Contact Number</FormLabel>
-              <FormControl>
-                <Input type="number" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         <div className="flex justify-between gap-2">
           {/* User Role */}
           {/* {isSuperAdmin && (
