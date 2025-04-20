@@ -7,6 +7,7 @@ import type { Session } from "@acme/auth";
 
 import { NAVBAR_LINKS } from "~/utils/constants";
 import { PageTitleContext } from "~/utils/context";
+import type { Role } from "~/types";
 import { Header } from "./Header";
 import { Navbar } from "./Navbar";
 
@@ -21,9 +22,16 @@ export default function DashboardLayoutClient({ session, children }: Props) {
   );
   const [pageTitle, setPageTitle] = useState<string | null>(null);
 
+  const userRole = session.user.role as Role;
+
+  const filteredNavLinks = NAVBAR_LINKS.filter(
+    (link) =>
+      !link.roles || (link.roles && userRole && link.roles.includes(userRole)),
+  );
+
   return (
     <main className="grid grid-cols-5 bg-slate-100/80 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8">
-      <Navbar navbarOpened={navbarOpened} NAVBAR_LINKS={NAVBAR_LINKS} />
+      <Navbar navbarOpened={navbarOpened} NAVBAR_LINKS={filteredNavLinks} />
       <div
         className={
           navbarOpened

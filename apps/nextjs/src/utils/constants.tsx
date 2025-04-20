@@ -4,13 +4,14 @@ import {
   IconMilk,
   IconMoon,
   IconNotebook,
+  IconSettings,
   IconShirtSport,
   IconUserCircle,
 } from "@tabler/icons-react";
 
 import type { RecurringType, TaskPriority, TaskStatus } from "@acme/db";
 
-import type { INavbarLink, RoleArray } from "~/types";
+import type { INavbarLink, Role, RoleArray } from "~/types";
 
 export const NAVBAR_LINKS: readonly INavbarLink[] = [
   {
@@ -30,6 +31,13 @@ export const NAVBAR_LINKS: readonly INavbarLink[] = [
     path: "/dashboard/tasks",
     label: "Tasks",
     icon: <IconHorseToy size={20} stroke={1.5} />,
+  },
+  {
+    id: "admin",
+    path: "/dashboard/admin",
+    label: "Admin",
+    icon: <IconSettings size={20} stroke={1.5} />,
+    roles: ["ADMIN"],
   },
   // {
   //   id: "reports",

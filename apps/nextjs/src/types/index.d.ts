@@ -33,6 +33,7 @@ export interface INavbarLink {
   readonly label: string;
   readonly path: string;
   readonly icon?: JSX.Element;
+  readonly roles?: readonly Role[];
   readonly subLinks?: readonly INavbarLink[];
 }
 

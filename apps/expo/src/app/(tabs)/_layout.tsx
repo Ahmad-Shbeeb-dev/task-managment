@@ -1,15 +1,24 @@
-import { Tabs } from "expo-router";
-import { Box, Center, Text } from "@gluestack-ui/themed";
+import { Redirect, Tabs } from "expo-router";
+import { Box, Center, Spinner, Text } from "@gluestack-ui/themed";
 import Gallery from "assets/icons/gallery.svg";
 import Home from "assets/icons/home.svg";
 import Messages from "assets/icons/messages.svg";
 import Profile from "assets/icons/profile.svg";
+import Settings from "assets/icons/settings.svg";
 import Updates from "assets/icons/updates.svg";
 import { nanoid } from "nanoid/non-secure";
 
+import { api } from "~/utils/api";
 import { useRegisterNotification } from "~/hooks/useRegisterNotification";
 
-const TABS = [
+interface TabDefinition {
+  name: string;
+  label: string;
+  icon: React.FC<any>;
+  roles?: readonly string[];
+}
+
+const TABS: readonly TabDefinition[] = [
   {
     name: "gallery/index",
     label: "Gallery",
@@ -35,10 +44,37 @@ const TABS = [
     label: "Profile",
     icon: Profile,
   },
+  {
+    name: "admin/index",
+    label: "Admin",
+    icon: Settings,
+    roles: ["ADMIN"],
+  },
 ] as const;
 
 export default function TabsLayout() {
   const { expoPushToken, notification } = useRegisterNotification();
+
+  const { data: session, isLoading, isError } = api.auth.getSession.useQuery();
+
+  if (isLoading) {
+    return (
+      <Center flex={1}>
+        <Spinner size="large" />
+      </Center>
+    );
+  }
+
+  if (isError || !session?.user) {
+    return <Redirect href="/(auth)/signin" />;
+  }
+
+  const userRole = session.user.role;
+
+  const filteredTabs = TABS.filter(
+    (tab) =>
+      !tab.roles || (tab.roles && userRole && tab.roles.includes(userRole)),
+  );
 
   return (
     <Tabs
@@ -49,12 +85,11 @@ export default function TabsLayout() {
         tabBarStyle: { paddingBottom: 8, minHeight: 78 },
       }}
     >
-      {TABS.map((tab) => (
+      {filteredTabs.map((tab) => (
         <Tabs.Screen
           key={nanoid()}
           name={tab.name}
           options={{
-            // tabBarBadge: 1,
             tabBarShowLabel: false,
             tabBarIcon: ({ color, focused }) => (
               <Center
