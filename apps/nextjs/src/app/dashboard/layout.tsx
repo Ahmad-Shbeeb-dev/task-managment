@@ -19,8 +19,6 @@ export default async function DashboardLayout(props: {
   const session = await auth();
   if (!session) redirect("/signin");
 
-  if (session.user.role !== "ADMIN") redirect("/");
-
   const base64UserImage = await convertImagePathsToBase64([
     { image: session.user.image },
   ]);

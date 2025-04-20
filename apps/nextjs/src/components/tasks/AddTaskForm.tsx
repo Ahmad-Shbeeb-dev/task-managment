@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { IconCalendar } from "@tabler/icons-react";
 import { format } from "date-fns";
+import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -70,6 +71,11 @@ interface AddTaskFormProps {
 }
 
 export function AddTaskForm({ onTaskAdded }: AddTaskFormProps) {
+  const { data: session } = useSession();
+  const userRole = session?.user?.role;
+  const userId = session?.user?.id;
+  const isAdmin = userRole === "ADMIN";
+
   const [isRecurring, setIsRecurring] = useState(false);
 
   const form = useForm<AddTaskFormValues>({
@@ -78,15 +84,18 @@ export function AddTaskForm({ onTaskAdded }: AddTaskFormProps) {
       title: "",
       description: "",
       priority: "MEDIUM",
-      assignedToId: "", // Initialize empty
+      assignedToId: isAdmin ? "" : userId ?? "",
       isRecurring: false,
-      // dueDate, recurringType are optional
     },
   });
 
-  // Fetch users for assignee dropdown
-  const { data: usersData, isLoading: usersLoading } =
-    api.user.getAll.useQuery(); // Assuming api.user.getAll exists
+  // Fetch users for assignee dropdown - only needed if user is admin
+  const { data: usersData, isLoading: usersLoading } = api.user.getAll.useQuery(
+    undefined, // no input
+    {
+      enabled: isAdmin, // Only run query if user is admin
+    },
+  );
 
   // tRPC mutation for creating task
   const utils = api.useUtils();
@@ -108,10 +117,21 @@ export function AddTaskForm({ onTaskAdded }: AddTaskFormProps) {
   });
 
   function onSubmit(data: AddTaskFormValues) {
-    // Ensure recurringType is null if isRecurring is false
+    // Ensure assignedToId is the logged-in user if not admin
+    const finalAssignedToId = isAdmin ? data.assignedToId : userId;
+
+    if (!finalAssignedToId) {
+      // Handle case where userId is somehow missing for non-admin (shouldn't happen if logged in)
+      console.error("User ID missing for non-admin task creation.");
+      // TODO: Set a form error
+      return;
+    }
+
+    // Ensure recurringType is undefined if isRecurring is false
     const submissionData = {
       ...data,
-      recurringType: data.isRecurring ? data.recurringType : null,
+      assignedToId: finalAssignedToId,
+      recurringType: data.isRecurring ? data.recurringType : undefined,
     };
     console.log("Submitting task:", submissionData);
     createTaskMutation.mutate(submissionData);
@@ -226,46 +246,47 @@ export function AddTaskForm({ onTaskAdded }: AddTaskFormProps) {
           />
         </div>
 
-        {/* Assignee */}
-        <FormField
-          control={form.control}
-          name="assignedToId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Assign To</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                defaultValue={field.value}
-                disabled={usersLoading}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue
-                      placeholder={
-                        usersLoading ? "Loading users..." : "Select assignee"
-                      }
-                    />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {usersData && usersData.length > 0 ? (
-                    usersData.map((user) => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.name ?? user.email ?? user.id}{" "}
-                        {/* Display name, fallback to email/id */}
+        {/* Assignee - Conditionally Rendered */}
+        {isAdmin && (
+          <FormField
+            control={form.control}
+            name="assignedToId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Assign To</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                  disabled={usersLoading}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue
+                        placeholder={
+                          usersLoading ? "Loading users..." : "Select assignee"
+                        }
+                      />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {usersData && usersData.length > 0 ? (
+                      usersData.map((user) => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.name ?? user.email ?? user.id}{" "}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="" disabled>
+                        {usersLoading ? "Loading..." : "No users found"}
                       </SelectItem>
-                    ))
-                  ) : (
-                    <SelectItem value="" disabled>
-                      {usersLoading ? "Loading..." : "No users found"}
-                    </SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                    )}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
         {/* Recurring Options */}
         <FormField

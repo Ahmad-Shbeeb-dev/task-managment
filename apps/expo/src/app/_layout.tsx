@@ -82,10 +82,7 @@ export default function RootLayout() {
   }
   return (
     <TRPCProvider>
-      <GluestackUIProvider
-        config={config}
-        // colorMode={theme}
-      >
+      <GluestackUIProvider config={config}>
         <GestureHandlerRootView style={{ flex: 1 }}>
           <SafeAreaProvider>
             {/*

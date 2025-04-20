@@ -1,6 +1,31 @@
 import React from "react";
+import { FlatList } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { HStack, ScrollView, Text, View, VStack } from "@gluestack-ui/themed";
+import {
+  Box,
+  Center,
+  Heading,
+  HStack,
+  ScrollView,
+  Select,
+  SelectBackdrop,
+  SelectContent,
+  SelectDragIndicator,
+  SelectDragIndicatorWrapper,
+  SelectInput,
+  SelectItem,
+  SelectPortal,
+  SelectTrigger,
+  Spinner,
+  Text,
+  Toast,
+  ToastDescription,
+  ToastTitle,
+  useToast,
+  View,
+  VStack,
+} from "@gluestack-ui/themed";
+import type { TaskPriority, TaskStatus } from "@prisma/client";
 import Calendar from "assets/icons/calendar.svg";
 import Chart from "assets/icons/chart.svg";
 import Event from "assets/icons/event.svg";
@@ -10,13 +35,17 @@ import PaperClip from "assets/icons/paperclip.svg";
 import { format } from "date-fns";
 import { nanoid } from "nanoid/non-secure";
 
+import type { RouterOutputs } from "@acme/api";
+
 import { api } from "~/utils/api";
-import { useAuth } from "~/utils/auth";
+import { TASK_STATUSES } from "~/utils/constants";
 import { HomeCarousel } from "~/components/HomeCarousel";
 import { HomeHeader } from "~/components/HomeHeader";
 import { HomeNewsCard } from "~/components/HomeNewsCard";
 import { SectionLink } from "~/components/SectionLink";
-import { TaskList } from "~/components/tasks/TaskList";
+
+// Use inferred type for a single task from the API output
+type TaskItemType = RouterOutputs["task"]["getAll"]["tasks"][number];
 
 const CARDS = [
   {
@@ -34,16 +63,180 @@ const CARDS = [
   },
 ] as const;
 
-export default function HomeScreen() {
-  const session = useAuth();
+// Simplified TaskItem component for mobile
+const TaskItem = ({ item }: { item: TaskItemType }) => {
+  const utils = api.useUtils();
+  const toast = useToast();
 
-  const { data: User } = api.child.getUserChildren.useQuery({
-    userId: session?.user.id ?? "",
+  const updateTaskStatusMutation = api.task.update.useMutation({
+    onSuccess: async () => {
+      toast.show({
+        placement: "top",
+        render: ({ id }) => (
+          <Toast nativeID={id} action="success" variant="accent">
+            <VStack space="xs">
+              <ToastTitle>Success</ToastTitle>
+              <ToastDescription>
+                Task "{item.title}" status updated!
+              </ToastDescription>
+            </VStack>
+          </Toast>
+        ),
+      });
+      // Invalidate queries to refetch data
+      await utils.task.getAll.invalidate();
+      // await utils.task.getStats.invalidate(); // Invalidate stats if shown on mobile
+    },
+    onError: (error) => {
+      toast.show({
+        placement: "top",
+        render: ({ id }) => (
+          <Toast nativeID={id} action="error" variant="accent">
+            <VStack space="xs">
+              <ToastTitle>Error</ToastTitle>
+              <ToastDescription>
+                Failed to update status: {error.message}
+              </ToastDescription>
+            </VStack>
+          </Toast>
+        ),
+      });
+    },
   });
 
-  const userHasChildren =
-    (User?.Parent?.ParentChildren && User.Parent.ParentChildren.length > 0) ??
-    false;
+  const handleStatusChange = (newStatus: TaskStatus) => {
+    if (newStatus === item.status || updateTaskStatusMutation.isLoading) return;
+
+    updateTaskStatusMutation.mutate({
+      id: item.id,
+      status: newStatus,
+    });
+  };
+
+  const getPriorityColor = (priority: TaskPriority) => {
+    switch (priority) {
+      case "HIGH":
+        return "$red600";
+      case "MEDIUM":
+        return "$orange600";
+      case "LOW":
+        return "$coolGray500";
+      default:
+        return "$coolGray800";
+    }
+  };
+
+  const getStatusColor = (status: TaskStatus) => {
+    switch (status) {
+      case "DONE":
+        return "$green600";
+      case "IN_PROGRESS":
+        return "$blue600";
+      case "TODO":
+        return "$red600";
+      default:
+        return "$coolGray800";
+    }
+  };
+
+  return (
+    <Box
+      borderWidth="$1"
+      borderColor="$borderLight200"
+      borderRadius="$lg"
+      p="$4"
+      mb="$3"
+      bg="$white"
+    >
+      <VStack space="sm">
+        <HStack justifyContent="space-between" alignItems="center">
+          <Heading size="sm" flex={1} mr="$2">
+            {item.title}
+          </Heading>
+          <Select
+            selectedValue={item.status}
+            onValueChange={(value) => handleStatusChange(value as TaskStatus)}
+            isDisabled={updateTaskStatusMutation.isLoading}
+            minWidth={120}
+          >
+            <SelectTrigger variant="outline" size="sm">
+              <SelectInput placeholder="Status" />
+            </SelectTrigger>
+            <SelectPortal>
+              <SelectBackdrop />
+              <SelectContent>
+                <SelectDragIndicatorWrapper>
+                  <SelectDragIndicator />
+                </SelectDragIndicatorWrapper>
+                {TASK_STATUSES.map((status) => (
+                  <SelectItem
+                    key={status}
+                    label={status.replace("_", " ")}
+                    value={status}
+                  />
+                ))}
+              </SelectContent>
+            </SelectPortal>
+          </Select>
+        </HStack>
+        {item.description && (
+          <Text size="sm" color="$coolGray600">
+            {item.description}
+          </Text>
+        )}
+        <HStack
+          justifyContent="space-between"
+          alignItems="center"
+          flexWrap="wrap"
+        >
+          <Text size="xs" color="$coolGray500">
+            Due: {item.dueDate ? format(new Date(item.dueDate), "P") : "N/A"}
+            {item.isRecurring && ` (${item.recurringType})`}
+          </Text>
+          <Text size="xs" color={getPriorityColor(item.priority)}>
+            {item.priority}
+          </Text>
+        </HStack>
+        {item.isRecurring && item.nextOccurrence && (
+          <Text size="xs" color="$blue600">
+            Next: {format(new Date(item.nextOccurrence), "P")}
+          </Text>
+        )}
+      </VStack>
+    </Box>
+  );
+};
+
+export default function HomeScreen() {
+  // Fetch tasks using tRPC hook
+  const {
+    data,
+    isLoading,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = api.task.getAll.useInfiniteQuery(
+    {
+      limit: 10, // Fetch 10 tasks per page
+    },
+    {
+      getNextPageParam: (lastPage) => lastPage?.nextCursor,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  );
+
+  // Flatten pages for FlatList
+  const allTasks = data?.pages.flatMap((page) => page.tasks) ?? [];
+
+  const renderListFooter = () => {
+    if (!hasNextPage) return null;
+    if (isFetchingNextPage) {
+      return <Spinner my="$4" />;
+    }
+    // Optionally add a "Load More" button if needed, FlatList's onEndReached is often sufficient
+    return null;
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#f8f9fa" }}>
@@ -100,6 +293,35 @@ export default function HomeScreen() {
         </HStack>
         {/* {Attendances?.map((card) => <HomeNewsCard key={nanoid()} {...card} />)} */}
       </ScrollView>
+      <VStack flex={1} p="$4">
+        <Heading mb="$4">My Tasks</Heading>
+        {isLoading && allTasks.length === 0 ? (
+          <Center flex={1}>
+            <Spinner size="large" />
+          </Center>
+        ) : error ? (
+          <Center flex={1}>
+            <Text color="$red700">Error loading tasks: {error.message}</Text>
+          </Center>
+        ) : allTasks.length === 0 ? (
+          <Center flex={1}>
+            <Text>No tasks assigned to you.</Text>
+          </Center>
+        ) : (
+          <FlatList
+            data={allTasks}
+            renderItem={({ item }) => <TaskItem item={item} />}
+            keyExtractor={(item) => item.id}
+            onEndReached={() => {
+              if (hasNextPage && !isFetchingNextPage) {
+                fetchNextPage();
+              }
+            }}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={renderListFooter}
+          />
+        )}
+      </VStack>
     </SafeAreaView>
   );
 }
