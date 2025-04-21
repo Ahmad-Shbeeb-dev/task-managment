@@ -35,6 +35,7 @@ export const SigninForm = () => {
     // reValidateMode: "onChange",
   });
   const session = useAuth();
+  console.log("🚀 ~ SigninForm ~ session:", session);
   const { signIn, isSigningIn } = useSignIn();
   const { signOut, isSigningOut } = useSignOut();
 
@@ -44,9 +45,9 @@ export const SigninForm = () => {
 
   return (
     <Center bgColor="#7BC9EF" h="$full" w="$full">
-      <Box w="$full" $md-h="$full" bgColor="#7BC9EF" $md-w="$1/2" mt="-$8">
+      {/* <Box w="$full" $md-h="$full" bgColor="#7BC9EF" $md-w="$1/2" mt="-$8">
         <SignIn width={373} />
-      </Box>
+      </Box> */}
 
       <Text
         textAlign="center"
@@ -80,7 +81,7 @@ export const SigninForm = () => {
             >
               Sign In
             </Text>
-            {session?.user ? (
+            {session?.user?.id ? (
               <Button
                 h="$12"
                 w="$72"

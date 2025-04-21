@@ -1,6 +1,6 @@
-import { RouterOutputs } from "@acme/api";
+import type { RouterOutputs } from "@acme/api";
 
-export type ExpoNotificationMessage = {
+export interface ExpoNotificationMessage {
   /**
    * An Expo push token or an array of Expo push tokens specifying the recipient(s) of this message.
    */
@@ -53,25 +53,7 @@ export type ExpoNotificationMessage = {
    * Specifies whether this notification can be intercepted by the client app. In Expo Go, this defaults to true, and if you change that to false, you may experience issues. In standalone and bare apps, this defaults to false. (iOS Only)
    */
   mutableContent?: boolean;
-};
+}
 
-export type ChildAttendanceType = Exclude<
-  RouterOutputs["child"]["getChildrenAttendances"][number]["Child"]["ChildAttendance"],
-  undefined
-> & {
-  nameEn: string;
-  nameAr: string;
-  image: string;
-};
-
-export type HomeNewsCardProps = {
-  cardTitle?: string;
-  cardBody?: string;
-  cardDate?: Date | null;
-  cardBackgroundColor?: string;
-  cardDividerIconColor?: string;
-  cardTitleIcon?: React.FC<SvgProps>;
-  cardFooterIcon?: React.FC<SvgProps>;
-  cardSocialImages?: string[];
-  cardChildrenImages?: { image?: string; nameEn: string }[];
-};
+// Infer the output type for a single task
+export type TaskOutput = RouterOutputs["task"]["getAll"]["tasks"][number];

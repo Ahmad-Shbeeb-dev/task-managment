@@ -8,7 +8,9 @@ import { WelcomeScreen } from "~/components/WelcomeScreen";
 export default function Index() {
   const session = useAuth();
 
-  if (session?.user) return <Redirect href="/home/" />;
+  if (!session?.user) return <Redirect href="/signin/" />;
+
+  // <Redirect href="/tasks/" />;
 
   return (
     <SafeAreaView>

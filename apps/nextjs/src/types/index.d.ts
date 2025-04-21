@@ -1,7 +1,4 @@
-import type { z } from "zod";
-
 import type { RouterOutputs } from "@acme/api";
-import type { upsertEmployeeValidation } from "@acme/api/validations";
 import type { UserRole } from "@acme/db";
 
 //TuplifyUnion type will convert union type to array of the union to make sure all types are in-sync between the prisma schema and front-end
@@ -41,23 +38,6 @@ export interface IUrlSorting {
   columnName: string;
   orderType: string;
 }
-
-export type ImageCategory =
-  | "childAttachment"
-  | "childVaccine"
-  | "childImage"
-  | "employeeAttachment";
-
-//Attendances
-export type ChildAttendancesTableType =
-  RouterOutputs["child"]["getChildrenAttendances"][number];
-export type EmployeeAttendancesTableType =
-  RouterOutputs["employee"]["getEmployeesAttendances"][number];
-
-// Employees
-export type EmployeeDetailsTableType =
-  RouterOutputs["employee"]["getEmployees"][number];
-export type EmployeeFormInputsType = z.infer<typeof upsertEmployeeValidation>;
 
 // Infer the output type for a single task
 export type TaskOutput = RouterOutputs["task"]["getAll"]["tasks"][number];

@@ -25,7 +25,6 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import Check from "assets/icons/check.svg";
 import Edit from "assets/icons/edit.svg";
-import ProfileChildCard from "assets/profile-child-card.svg";
 import { differenceInYears } from "date-fns";
 import { nanoid } from "nanoid/non-secure";
 import { Controller, useForm } from "react-hook-form";

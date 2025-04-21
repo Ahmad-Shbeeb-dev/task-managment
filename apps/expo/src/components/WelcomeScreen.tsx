@@ -46,10 +46,10 @@ export const WelcomeScreen = () => {
           minHeight="$24"
           mb={87}
         >
-          Welcome To Kindergarten
+          Welcome To Task Management
         </Text>
 
-        <Link href="/stay-in-touch/" asChild>
+        <Link href="/signin/" asChild>
           <Button w={302} h={50} bgColor="$white" borderRadius="$lg">
             <ButtonText color="$black">Let&apos;s get started</ButtonText>
           </Button>
@@ -75,7 +75,7 @@ export const WelcomeScreen = () => {
             Welcome To Kindergarten
           </Text>
 
-          <Link href="/stay-in-touch/" asChild>
+          <Link href="/signin/" asChild>
             <Button w={302} h={50} bgColor="$white" borderRadius="$lg">
               <ButtonText color="$black">Let&apos;s get started</ButtonText>
             </Button>

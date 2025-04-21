@@ -77,9 +77,6 @@ export default function RootLayout() {
     Poppins_900Black_Italic,
     TitanOne_400Regular,
   });
-  if (!fontsLoaded) {
-    return null;
-  }
   return (
     <TRPCProvider>
       <GluestackUIProvider config={config}>

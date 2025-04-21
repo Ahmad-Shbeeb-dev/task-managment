@@ -4,7 +4,6 @@ import {
   FlatList,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
 import {
@@ -23,15 +22,14 @@ import {
   ToastTitle,
   useToast,
 } from "@gluestack-ui/themed";
-import type { inferRouterOutputs } from "@trpc/server";
 import { format } from "date-fns";
 
-// import { TaskPriority, TaskStatus } from "@acme/db";
+import { TaskStatus } from "@acme/db";
 
 import { api } from "~/utils/api";
+import type { TaskOutput } from "~/types";
 
-// import type { TaskOutput } from "~/types";
-
+// const TaskStatus :TaskStatus = {
 // Task Item Component with Status Update
 const TaskItem = ({ item }: { item: TaskOutput }) => {
   const utils = api.useUtils();
@@ -188,7 +186,7 @@ export function TaskList() {
   return (
     <FlatList
       data={allTasks}
-      renderItem={({ item }) => <TaskItem item={item as TaskOutput} />}
+      renderItem={({ item }) => <TaskItem item={item} />}
       keyExtractor={(item) => item.id}
       onEndReached={loadMore}
       onEndReachedThreshold={0.5}

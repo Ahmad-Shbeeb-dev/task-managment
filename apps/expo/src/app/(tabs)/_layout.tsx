@@ -1,10 +1,7 @@
 import { Redirect, Tabs } from "expo-router";
 import { Box, Center, Spinner, Text } from "@gluestack-ui/themed";
-import Gallery from "assets/icons/gallery.svg";
 import Home from "assets/icons/home.svg";
-import Messages from "assets/icons/messages.svg";
 import Profile from "assets/icons/profile.svg";
-import Settings from "assets/icons/settings.svg";
 import Updates from "assets/icons/updates.svg";
 import { nanoid } from "nanoid/non-secure";
 
@@ -20,9 +17,9 @@ interface TabDefinition {
 
 const TABS: readonly TabDefinition[] = [
   {
-    name: "gallery/index",
-    label: "Gallery",
-    icon: Gallery,
+    name: "tasks/index",
+    label: "Tasks",
+    icon: Home,
   },
   {
     name: "updates/index",
@@ -30,25 +27,9 @@ const TABS: readonly TabDefinition[] = [
     icon: Updates,
   },
   {
-    name: "home/index",
-    label: "Home",
-    icon: Home,
-  },
-  {
-    name: "messages/index",
-    label: "Messages",
-    icon: Messages,
-  },
-  {
     name: "profile/index",
     label: "Profile",
     icon: Profile,
-  },
-  {
-    name: "admin/index",
-    label: "Admin",
-    icon: Settings,
-    roles: ["ADMIN"],
   },
 ] as const;
 

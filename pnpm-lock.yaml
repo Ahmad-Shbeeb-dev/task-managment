@@ -156,6 +156,9 @@ importers:
       '@acme/api':
         specifier: ^0.1.0
         version: link:../../packages/api
+      '@acme/db':
+        specifier: ^0.1.0
+        version: link:../../packages/db
       '@acme/eslint-config':
         specifier: ^0.2.0
         version: link:../../packages/config/eslint

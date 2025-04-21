@@ -40,7 +40,7 @@ export const useSignIn = () => {
 
       await setToken(sessionToken);
       await utils.invalidate();
-      router.replace("/home/");
+      router.replace("/(tabs)/tasks/");
     } catch (err) {
       console.error(err);
     }
