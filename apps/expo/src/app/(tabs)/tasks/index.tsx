@@ -45,7 +45,7 @@ const TaskItem = ({ item }: { item: TaskItemType }) => {
       toast.show({
         placement: "top",
         render: ({ id }) => (
-          <Toast nativeID={id} action="success" variant="accent">
+          <Toast nativeID={"toast-" + id} action="success" variant="accent">
             <VStack space="xs">
               <ToastTitle>Success</ToastTitle>
               <ToastDescription>
@@ -63,7 +63,7 @@ const TaskItem = ({ item }: { item: TaskItemType }) => {
       toast.show({
         placement: "top",
         render: ({ id }) => (
-          <Toast nativeID={id} action="error" variant="accent">
+          <Toast nativeID={"toast-" + id} action="error" variant="accent">
             <VStack space="xs">
               <ToastTitle>Error</ToastTitle>
               <ToastDescription>

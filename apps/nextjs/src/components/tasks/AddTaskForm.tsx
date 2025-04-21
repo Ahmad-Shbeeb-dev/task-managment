@@ -9,8 +9,9 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { TASK_PRIORITIES, TASK_RECURRING_TYPES } from "@acme/db";
+
 import { api } from "~/utils/api";
-import { TASK_PRIORITIES, TASK_RECURRING_TYPES } from "~/utils/constants";
 import { cn } from "~/utils/ui";
 import { Button } from "~/components/ui/Button";
 import { Calendar } from "~/components/ui/Calendar";
@@ -230,9 +231,9 @@ export function AddTaskForm({ onTaskAdded }: AddTaskFormProps) {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {TASK_PRIORITIES.map((prio) => (
-                      <SelectItem key={prio} value={prio}>
-                        {prio}
+                    {TASK_PRIORITIES.map((priority) => (
+                      <SelectItem key={priority} value={priority}>
+                        {priority}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -336,9 +337,9 @@ export function AddTaskForm({ onTaskAdded }: AddTaskFormProps) {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {TASK_RECURRING_TYPES.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
+                    {TASK_RECURRING_TYPES.map((recurringType) => (
+                      <SelectItem key={recurringType} value={recurringType}>
+                        {recurringType}
                       </SelectItem>
                     ))}
                   </SelectContent>

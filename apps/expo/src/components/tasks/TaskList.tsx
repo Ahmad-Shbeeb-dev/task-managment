@@ -24,7 +24,8 @@ import {
 } from "@gluestack-ui/themed";
 import { format } from "date-fns";
 
-import { TaskStatus } from "@acme/db";
+import type { TaskStatus } from "@acme/db";
+import { TASK_STATUSES } from "@acme/db";
 
 import { api } from "~/utils/api";
 import type { TaskOutput } from "~/types";
@@ -40,7 +41,7 @@ const TaskItem = ({ item }: { item: TaskOutput }) => {
       toast.show({
         placement: "top",
         render: ({ id }) => (
-          <Toast nativeID={`toast-${id}`} action="success" variant="accent">
+          <Toast nativeID={"toast-" + id} action="success" variant="accent">
             <ToastTitle>Status Updated!</ToastTitle>
           </Toast>
         ),
@@ -51,7 +52,7 @@ const TaskItem = ({ item }: { item: TaskOutput }) => {
       toast.show({
         placement: "top",
         render: ({ id }) => (
-          <Toast nativeID={`toast-${id}`} action="error" variant="accent">
+          <Toast nativeID={"toast-" + id} action="error" variant="accent">
             <ToastTitle>Update Failed: {error.message}</ToastTitle>
           </Toast>
         ),
@@ -59,16 +60,15 @@ const TaskItem = ({ item }: { item: TaskOutput }) => {
     },
   });
 
-  const handleStatusChange = (newStatus: string) => {
-    const statusEnumValue = TaskStatus[newStatus as keyof typeof TaskStatus];
-    if (!statusEnumValue || statusEnumValue === item.status) {
+  const handleStatusChange = (newStatus: TaskStatus) => {
+    if (!TASK_STATUSES.includes(newStatus)) {
       console.warn("Invalid or unchanged status:", newStatus);
       return;
     }
 
     updateTaskStatusMutation.mutate({
       id: item.id,
-      status: statusEnumValue,
+      status: newStatus,
     });
   };
 
@@ -77,7 +77,7 @@ const TaskItem = ({ item }: { item: TaskOutput }) => {
       <View style={styles.itemHeaderRow}>
         <Text style={styles.itemTitle}>{item.title}</Text>
         <Select
-          onValueChange={handleStatusChange}
+          onValueChange={(value) => handleStatusChange(value as TaskStatus)}
           selectedValue={item.status}
           isDisabled={updateTaskStatusMutation.isLoading}
         >
@@ -91,15 +91,13 @@ const TaskItem = ({ item }: { item: TaskOutput }) => {
               <SelectDragIndicatorWrapper>
                 <SelectDragIndicator />
               </SelectDragIndicatorWrapper>
-              {(Object.keys(TaskStatus) as (keyof typeof TaskStatus)[]).map(
-                (status) => (
-                  <SelectItem
-                    key={status}
-                    label={status.replace("_", " ")}
-                    value={status}
-                  />
-                ),
-              )}
+              {TASK_STATUSES.map((status) => (
+                <SelectItem
+                  key={status}
+                  label={status.replace("_", " ")}
+                  value={status}
+                />
+              ))}
             </SelectContent>
           </SelectPortal>
         </Select>
@@ -148,9 +146,9 @@ export function TaskList() {
     },
   );
 
-  const loadMore = () => {
+  const loadMore = async () => {
     if (hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
+      await fetchNextPage();
     }
   };
 

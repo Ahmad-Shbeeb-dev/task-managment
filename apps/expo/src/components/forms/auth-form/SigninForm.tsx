@@ -35,7 +35,6 @@ export const SigninForm = () => {
     // reValidateMode: "onChange",
   });
   const session = useAuth();
-  console.log("🚀 ~ SigninForm ~ session:", session);
   const { signIn, isSigningIn } = useSignIn();
   const { signOut, isSigningOut } = useSignOut();
 

@@ -1,5 +1,4 @@
 import type { RouterOutputs } from "@acme/api";
-import type { UserRole } from "@acme/db";
 
 //TuplifyUnion type will convert union type to array of the union to make sure all types are in-sync between the prisma schema and front-end
 type UnionToIntersection<U> = (
@@ -18,12 +17,6 @@ export type TuplifyUnion<
   L = LastOf<T>,
   N = [T] extends [never] ? true : false,
 > = true extends N ? [] : Push<TuplifyUnion<Exclude<T, L>>, L>;
-
-// export type UserRole = RouterInputs["user"]["updateRole"][number]["userRole"];
-
-// convert Role type defined on input from prisma schema enum to RoleArray
-export type Role = UserRole;
-export type RoleArray = TuplifyUnion<UserRole>;
 
 export interface INavbarLink {
   readonly id: string;

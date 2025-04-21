@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useLayoutEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Redirect, Stack } from "expo-router";
+import { router, Stack } from "expo-router";
 
 import { useAuth } from "~/utils/auth";
 import { WelcomeScreen } from "~/components/WelcomeScreen";
@@ -8,9 +8,11 @@ import { WelcomeScreen } from "~/components/WelcomeScreen";
 export default function Index() {
   const session = useAuth();
 
-  if (!session?.user) return <Redirect href="/signin/" />;
-
-  // <Redirect href="/tasks/" />;
+  useLayoutEffect(() => {
+    if (session?.user) {
+      router.replace("/tasks/");
+    }
+  }, [session?.user]);
 
   return (
     <SafeAreaView>

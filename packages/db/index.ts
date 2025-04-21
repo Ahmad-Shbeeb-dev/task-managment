@@ -10,6 +10,8 @@ import {
 } from "@prisma/client";
 import { createSoftDeleteMiddleware } from "prisma-soft-delete-middleware";
 
+import { TuplifyUnion } from "./utils";
+
 if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is not set");
 }
@@ -27,6 +29,23 @@ export type UserRole = Role;
 export type TaskStatus = PrismaTaskStatus;
 export type TaskPriority = PrismaTaskPriority;
 export type RecurringType = PrismaRecurringType;
+
+export const ROLES: TuplifyUnion<UserRole> = ["ADMIN", "USER"];
+export const TASK_STATUSES: TuplifyUnion<TaskStatus> = [
+  "TODO",
+  "IN_PROGRESS",
+  "DONE",
+];
+export const TASK_PRIORITIES: TuplifyUnion<TaskPriority> = [
+  "LOW",
+  "MEDIUM",
+  "HIGH",
+];
+export const TASK_RECURRING_TYPES: TuplifyUnion<RecurringType> = [
+  "DAILY",
+  "WEEKLY",
+  "MONTHLY",
+];
 
 export const prisma =
   globalForPrisma.prisma ||
