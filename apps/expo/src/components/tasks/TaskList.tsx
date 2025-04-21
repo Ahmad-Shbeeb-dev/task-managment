@@ -25,9 +25,9 @@ import {
 import { format } from "date-fns";
 
 import type { TaskStatus } from "@acme/db";
-import { TASK_STATUSES } from "@acme/db";
 
 import { api } from "~/utils/api";
+import { TASK_STATUSES } from "~/utils/constants";
 import type { TaskOutput } from "~/types";
 
 // const TaskStatus :TaskStatus = {

@@ -9,9 +9,8 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { TASK_PRIORITIES, TASK_RECURRING_TYPES } from "@acme/db";
-
 import { api } from "~/utils/api";
+import { TASK_PRIORITIES, TASK_RECURRING_TYPES } from "~/utils/constants";
 import { cn } from "~/utils/ui";
 import { Button } from "~/components/ui/Button";
 import { Calendar } from "~/components/ui/Calendar";
