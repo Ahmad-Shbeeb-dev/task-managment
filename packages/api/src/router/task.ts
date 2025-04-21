@@ -110,13 +110,23 @@ export const taskRouter = createTRPCRouter({
         whereCondition.assignedToId = userId;
       }
 
+      // If cursor is provided, we need to skip that item to avoid duplication
+      if (cursor) {
+        whereCondition.id = {
+          not: cursor, // Exclude the cursor item to prevent duplicates
+        };
+      }
+
       // Admins will not have the assignedToId filter applied,
       // thus fetching all tasks (unless they also provide a status filter).
 
       const tasks = await ctx.prisma.task.findMany({
         take: limit + 1,
         where: whereCondition, // Apply the dynamic where condition
-        cursor: cursor ? { id: cursor } : undefined,
+        ...(cursor && {
+          cursor: { id: cursor },
+          skip: 1, // Skip the cursor item to prevent duplicates
+        }),
         orderBy: {
           createdAt: "desc",
         },
