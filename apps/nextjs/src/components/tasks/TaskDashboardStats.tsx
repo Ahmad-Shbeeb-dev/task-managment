@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import {
   Bar,
   BarChart,
@@ -9,8 +8,6 @@ import {
   Legend,
   Line,
   LineChart,
-  Pie,
-  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,

@@ -5,7 +5,11 @@ import { z } from "zod";
 import type { TaskStatus } from "@acme/db";
 
 import { calculateNextOccurrence } from "../../utils";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  protectedProcedureAdmin,
+} from "../trpc";
 import {
   createTaskInputSchema,
   getTasksInputSchema,
@@ -191,13 +195,12 @@ export const taskRouter = createTRPCRouter({
           ...dataToUpdate,
           recurringType: dataToUpdate.recurringType, // Ensure this is included in the update data
           nextOccurrence: nextOccurrence,
-          // updatedById: userId, // Add if audit fields are used
         },
       });
       return updatedTask;
     }),
 
-  delete: protectedProcedure
+  delete: protectedProcedureAdmin
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { session } = ctx;
@@ -221,11 +224,16 @@ export const taskRouter = createTRPCRouter({
         });
       }
 
-      await ctx.prisma.task.delete({ where: { id } });
+      await ctx.prisma.task.update({
+        where: { id },
+        data: {
+          deleted: true,
+        },
+      });
       return { success: true };
     }),
 
-  getStats: protectedProcedure.query(async ({ ctx }) => {
+  getStats: protectedProcedureAdmin.query(async ({ ctx }) => {
     const { session } = ctx;
     const userId = session.user.id;
     const userRole = session.user.role; // Get user role
@@ -242,7 +250,6 @@ export const taskRouter = createTRPCRouter({
 
     const statusCounts = await ctx.prisma.task.groupBy({
       by: ["status"],
-      // where: { assignedToId: userId }, // Original code
       where: whereCondition, // Apply dynamic condition
       _count: { status: true },
     });
@@ -253,11 +260,6 @@ export const taskRouter = createTRPCRouter({
     // Prisma groupBy on MongoDB doesn't support grouping by date parts directly.
     // Fetch raw data and aggregate in code.
     const completedTasksRaw = await ctx.prisma.task.findMany({
-      // where: { // Original code
-      //   assignedToId: userId,
-      //   status: "DONE",
-      //   updatedAt: { gte: sevenDaysAgo },
-      // },
       where: {
         ...whereCondition, // Apply dynamic condition here as well
         status: "DONE",

@@ -10,6 +10,7 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 const ADMIN_PASSWORD = "asddsa";
+const TASK_COUNT = 20;
 
 async function main() {
   let admin = await prisma.user.findFirst({
@@ -109,7 +110,7 @@ async function main() {
       TaskStatus.DONE,
     ];
 
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < TASK_COUNT; i++) {
       tasksData.push({
         title: faker.lorem.sentence(),
         description: faker.lorem.paragraph(),
@@ -119,16 +120,15 @@ async function main() {
         status: faker.helpers.arrayElement(taskStatuses),
         assignedToId: userForTasks.id,
         dueDate: faker.date.future(),
-        // Add audit fields if necessary, depending on your schema requirements
-        // createdBy: adminId,
-        // updatedBy: adminId,
       });
     }
 
     await prisma.task.createMany({
       data: tasksData,
     });
-    console.log(`>>>> Seeded 20 tasks for user ${userForTasks.email}`);
+    console.log(
+      `>>>> Seeded ${TASK_COUNT} tasks for user ${userForTasks.email}`,
+    );
   } else {
     console.log("User user@test.com not found, skipping task seeding.");
   }

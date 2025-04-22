@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { IconCalendar } from "@tabler/icons-react";
 import { format } from "date-fns";
@@ -8,8 +8,14 @@ import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import type { AddTaskFormType } from "@acme/api/validations";
-import { createTaskInputSchema } from "@acme/api/validations";
+import type {
+  AddTaskFormType,
+  UpdateTaskFormType,
+} from "@acme/api/validations";
+import {
+  createTaskInputSchema,
+  updateTaskInputSchema,
+} from "@acme/api/validations";
 
 import { api } from "~/utils/api";
 import { TASK_PRIORITIES, TASK_RECURRING_TYPES } from "~/utils/constants";
@@ -39,27 +45,53 @@ import {
   SelectValue,
 } from "~/components/ui/Select";
 import { Textarea } from "~/components/ui/Textarea";
+import type { TaskOutput } from "~/types";
 
 interface AddTaskFormProps {
   onTaskAdded?: () => void; // Optional callback after task is added
+  onSuccess?: () => void; // Optional callback after task is added or updated
+  initialData?: TaskOutput; // Task data for editing mode
 }
 
-export function AddTaskForm({ onTaskAdded }: AddTaskFormProps) {
+export function AddTaskForm({
+  onTaskAdded,
+  onSuccess,
+  initialData,
+}: AddTaskFormProps) {
   const { data: session } = useSession();
   const isAdmin = session?.user?.role === "ADMIN";
   const userId = session?.user?.id;
 
-  const [isRecurring, setIsRecurring] = useState(false);
+  const isEditMode = !!initialData;
+  const [isRecurring, setIsRecurring] = useState(
+    initialData?.isRecurring ?? false,
+  );
 
-  const form = useForm<AddTaskFormType>({
-    resolver: zodResolver(createTaskInputSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      priority: "MEDIUM",
-      assignedToId: isAdmin ? "" : userId ?? "",
-      isRecurring: false,
-    },
+  // Use different schemas and types based on whether we're creating or updating
+  const formSchema = isEditMode ? updateTaskInputSchema : createTaskInputSchema;
+
+  const form = useForm<AddTaskFormType | UpdateTaskFormType>({
+    resolver: zodResolver(formSchema),
+    defaultValues: isEditMode
+      ? {
+          id: initialData.id,
+          title: initialData.title,
+          description: initialData.description ?? "",
+          priority: initialData.priority,
+          dueDate: initialData.dueDate
+            ? new Date(initialData.dueDate)
+            : undefined,
+          assignedToId: initialData.assignedTo?.id ?? userId ?? "",
+          isRecurring: initialData.isRecurring,
+          recurringType: initialData.recurringType ?? undefined,
+        }
+      : {
+          title: "",
+          description: "",
+          priority: "MEDIUM",
+          assignedToId: isAdmin ? "" : userId ?? "",
+          isRecurring: false,
+        },
   });
 
   // Fetch users for assignee dropdown - only run if user is admin
@@ -70,8 +102,9 @@ export function AddTaskForm({ onTaskAdded }: AddTaskFormProps) {
     },
   );
 
-  // tRPC mutation for creating task
+  // tRPC mutations for creating/updating tasks
   const utils = api.useUtils();
+
   const createTaskMutation = api.task.create.useMutation({
     onSuccess: (data) => {
       toast.success(`Task "${data.title}" created successfully!`);
@@ -80,6 +113,7 @@ export function AddTaskForm({ onTaskAdded }: AddTaskFormProps) {
       form.reset();
       setIsRecurring(false);
       onTaskAdded?.();
+      onSuccess?.();
     },
     onError: (error) => {
       toast.error(`Error creating task: ${error.message}`);
@@ -87,7 +121,23 @@ export function AddTaskForm({ onTaskAdded }: AddTaskFormProps) {
     },
   });
 
-  function onSubmit(data: AddTaskFormType) {
+  const updateTaskMutation = api.task.update.useMutation({
+    onSuccess: (data) => {
+      toast.success(`Task "${data.title}" updated successfully!`);
+      void utils.task.getAll.invalidate();
+      void utils.task.getStats.invalidate();
+      onSuccess?.();
+    },
+    onError: (error) => {
+      toast.error(`Error updating task: ${error.message}`);
+      form.setError("root", { message: `Update failed: ${error.message}` });
+    },
+  });
+
+  const isSubmitting =
+    createTaskMutation.isLoading || updateTaskMutation.isLoading;
+
+  function onSubmit(data: AddTaskFormType | UpdateTaskFormType) {
     // Ensure assignedToId is the logged-in user if not admin
     const finalAssignedToId = isAdmin ? data.assignedToId : userId;
 
@@ -104,8 +154,22 @@ export function AddTaskForm({ onTaskAdded }: AddTaskFormProps) {
       assignedToId: finalAssignedToId,
       recurringType: data.isRecurring ? data.recurringType : undefined,
     };
-    createTaskMutation.mutate(submissionData);
+
+    if (isEditMode && "id" in data) {
+      // Update existing task
+      updateTaskMutation.mutate(submissionData as UpdateTaskFormType);
+    } else {
+      // Create new task
+      createTaskMutation.mutate(submissionData as AddTaskFormType);
+    }
   }
+
+  // Effect to update isRecurring state when initialData changes
+  useEffect(() => {
+    if (initialData) {
+      setIsRecurring(initialData.isRecurring);
+    }
+  }, [initialData]);
 
   return (
     <Form {...form}>
@@ -174,7 +238,7 @@ export function AddTaskForm({ onTaskAdded }: AddTaskFormProps) {
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
-                      selected={field.value}
+                      selected={field.value ?? undefined}
                       onSelect={field.onChange}
                       initialFocus
                     />
@@ -226,7 +290,7 @@ export function AddTaskForm({ onTaskAdded }: AddTaskFormProps) {
                 <Select
                   onValueChange={field.onChange}
                   value={field.value}
-                  disabled={usersLoading || createTaskMutation.isLoading}
+                  disabled={usersLoading || isSubmitting}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -279,7 +343,7 @@ export function AddTaskForm({ onTaskAdded }: AddTaskFormProps) {
                       form.setValue("recurringType", undefined);
                     }
                   }}
-                  disabled={createTaskMutation.isLoading}
+                  disabled={isSubmitting}
                 />
               </FormControl>
               <div className="space-y-1 leading-none">
@@ -299,8 +363,8 @@ export function AddTaskForm({ onTaskAdded }: AddTaskFormProps) {
                 <FormLabel>Recurring Frequency</FormLabel>
                 <Select
                   onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  disabled={createTaskMutation.isLoading}
+                  defaultValue={field.value ?? undefined}
+                  disabled={isSubmitting}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -321,8 +385,14 @@ export function AddTaskForm({ onTaskAdded }: AddTaskFormProps) {
           />
         )}
 
-        <Button type="submit" disabled={createTaskMutation.isLoading}>
-          {createTaskMutation.isLoading ? "Adding Task..." : "Add Task"}
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting
+            ? isEditMode
+              ? "Updating Task..."
+              : "Adding Task..."
+            : isEditMode
+              ? "Update Task"
+              : "Add Task"}
         </Button>
       </form>
     </Form>
