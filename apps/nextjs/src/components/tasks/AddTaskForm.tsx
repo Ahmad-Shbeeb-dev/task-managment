@@ -1,13 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { IconCalendar } from "@tabler/icons-react";
 import { format } from "date-fns";
 import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
+
+import type { AddTaskFormType } from "@acme/api/validations";
+import { createTaskInputSchema } from "@acme/api/validations";
 
 import { api } from "~/utils/api";
 import { TASK_PRIORITIES, TASK_RECURRING_TYPES } from "~/utils/constants";
@@ -18,7 +20,6 @@ import { Checkbox } from "~/components/ui/Checkbox";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -39,48 +40,19 @@ import {
 } from "~/components/ui/Select";
 import { Textarea } from "~/components/ui/Textarea";
 
-// Reuse schema definition logic if possible, or define frontend-specific validation
-// Note: Zod schema used by react-hook-form
-const addTaskFormSchema = z
-  .object({
-    title: z.string().min(1, { message: "Title is required" }),
-    description: z.string().optional(),
-    dueDate: z.date().optional(),
-    priority: z.enum(["LOW", "MEDIUM", "HIGH"]).default("MEDIUM"),
-    assignedToId: z.string().min(1, { message: "Please select an assignee." }),
-    isRecurring: z.boolean().default(false),
-    recurringType: z.enum(["DAILY", "WEEKLY", "MONTHLY"]).optional(),
-  })
-  .refine(
-    (data) => {
-      // If isRecurring is true, recurringType must be set
-      if (data.isRecurring && !data.recurringType) {
-        return false;
-      }
-      return true;
-    },
-    {
-      message: "Recurring type is required for recurring tasks",
-      path: ["recurringType"], // path of error
-    },
-  );
-
-type AddTaskFormValues = z.infer<typeof addTaskFormSchema>;
-
 interface AddTaskFormProps {
   onTaskAdded?: () => void; // Optional callback after task is added
 }
 
 export function AddTaskForm({ onTaskAdded }: AddTaskFormProps) {
   const { data: session } = useSession();
-  const userRole = session?.user?.role;
+  const isAdmin = session?.user?.role === "ADMIN";
   const userId = session?.user?.id;
-  const isAdmin = userRole === "ADMIN";
 
   const [isRecurring, setIsRecurring] = useState(false);
 
-  const form = useForm<AddTaskFormValues>({
-    resolver: zodResolver(addTaskFormSchema),
+  const form = useForm<AddTaskFormType>({
+    resolver: zodResolver(createTaskInputSchema),
     defaultValues: {
       title: "",
       description: "",
@@ -115,7 +87,7 @@ export function AddTaskForm({ onTaskAdded }: AddTaskFormProps) {
     },
   });
 
-  function onSubmit(data: AddTaskFormValues) {
+  function onSubmit(data: AddTaskFormType) {
     // Ensure assignedToId is the logged-in user if not admin
     const finalAssignedToId = isAdmin ? data.assignedToId : userId;
 
@@ -178,7 +150,7 @@ export function AddTaskForm({ onTaskAdded }: AddTaskFormProps) {
             control={form.control}
             name="dueDate"
             render={({ field }) => (
-              <FormItem className="flex flex-col pt-2">
+              <FormItem className="flex flex-col gap-1 pt-1.5">
                 <FormLabel>Due Date (Optional)</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
@@ -218,7 +190,7 @@ export function AddTaskForm({ onTaskAdded }: AddTaskFormProps) {
             control={form.control}
             name="priority"
             render={({ field }) => (
-              <FormItem className="pt-2">
+              <FormItem className="pt-0">
                 <FormLabel>Priority</FormLabel>
                 <Select
                   onValueChange={field.onChange}

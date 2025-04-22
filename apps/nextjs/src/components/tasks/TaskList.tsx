@@ -6,7 +6,7 @@ import { toast } from "sonner"; // Assuming sonner (or similar) is used for toas
 import type { TaskPriority, TaskStatus } from "@acme/db";
 
 import { api } from "~/utils/api"; // Assuming tRPC client is setup here
-import { TASK_STATUSES } from "~/utils/constants";
+import { STATUS_FILTER_OPTIONS, TASK_STATUSES } from "~/utils/constants";
 import { cn } from "~/utils/ui"; // Import cn utility
 
 import { Badge } from "~/components/ui/Badge"; // For displaying priority/status visually
@@ -24,22 +24,13 @@ import { Skeleton } from "~/components/ui/Skeleton"; // Added Skeleton import
 
 import type { TaskOutput } from "~/types";
 
-// Make TASK_STATUSES easily iterable with an 'ALL' option for filtering
-const STATUS_FILTER_OPTIONS = [
-  { value: "ALL", label: "All Statuses" },
-  ...TASK_STATUSES.map((status) => ({
-    value: status,
-    label: status.replace("_", " "),
-  })),
-];
-
 // Renamed from TaskItemPlaceholder and added status update logic
 const TaskItem = ({ task }: { task: TaskOutput }) => {
   const utils = api.useUtils();
 
   const updateTaskStatusMutation = api.task.update.useMutation({
     onSuccess: async () => {
-      toast.success(`Task \"${task.title}\" status updated!`);
+      toast.success(`Task "${task.title}" status updated!`);
       // Invalidate queries to refetch data
       await utils.task.getAll.invalidate(); // Invalidate all pages
       await utils.task.getStats.invalidate(); // Also invalidate stats if they depend on status
@@ -160,7 +151,6 @@ export function TaskList() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    // No need for refetch() explicitly here as the query key changes
   } = api.task.getAll.useInfiniteQuery(
     {
       limit: 10, // Fetch 10 tasks per page
@@ -207,7 +197,7 @@ export function TaskList() {
         <p className="text-muted-foreground">
           {statusFilter === "ALL"
             ? "No tasks found."
-            : `No tasks found with status \"${statusFilter.replace("_", " ")}\".`}
+            : `No tasks found with status "${statusFilter.replace("_", " ")}".`}
         </p>
       );
     }

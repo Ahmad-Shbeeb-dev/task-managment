@@ -11,7 +11,6 @@ import {
 } from "@acme/auth";
 import type { UserRole } from "@acme/db";
 
-import { convertImagePathsToBase64 } from "../../utils";
 import { sendMail } from "../nodemailer";
 import { serverSideCallerPublic } from "../serverSideCaller";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
@@ -23,17 +22,12 @@ import {
 
 export const authRouter = createTRPCRouter({
   getSession: publicProcedure.query(async ({ ctx }) => {
-    const base64UserImage = await convertImagePathsToBase64([
-      { image: ctx.session?.user?.image },
-    ]);
-
     let session: Session | null = null;
     if (ctx.session) {
       session = {
         ...ctx.session,
         user: {
           ...ctx.session.user,
-          image: base64UserImage[0]?.image,
         },
       };
     }

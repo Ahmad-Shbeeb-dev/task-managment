@@ -10,8 +10,6 @@ import {
 } from "@prisma/client";
 import { createSoftDeleteMiddleware } from "prisma-soft-delete-middleware";
 
-import { TuplifyUnion } from "./utils";
-
 if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is not set");
 }
@@ -93,6 +91,7 @@ prisma.$use(
       VerificationToken: true,
       Notification: true,
       NotificationUser: true,
+      Task: true,
     },
     defaultConfig: {
       field: "deleted",

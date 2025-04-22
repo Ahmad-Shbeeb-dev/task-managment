@@ -42,3 +42,12 @@ export const TASK_RECURRING_TYPES: TuplifyUnion<RecurringType> = [
   "WEEKLY",
   "MONTHLY",
 ];
+
+// Make TASK_STATUSES easily iterable with an 'ALL' option for filtering
+export const STATUS_FILTER_OPTIONS = [
+  { value: "ALL", label: "All Statuses" },
+  ...TASK_STATUSES.map((status) => ({
+    value: status,
+    label: status.replace("_", " "),
+  })),
+];

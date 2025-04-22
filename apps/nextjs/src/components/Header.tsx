@@ -28,7 +28,6 @@ interface Props {
 }
 
 export const Header = ({ navbarOpened, toggleNavbar, session }: Props) => {
-  console.log("🚀 ~ Header ~ session:", session);
   const today = startOfDay(new Date());
   const formattedDate = format(today, "MMMM - EEE dd");
   const handleNavbar = () => {

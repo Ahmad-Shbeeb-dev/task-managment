@@ -1,38 +1,16 @@
-// Corrected import path for Prisma generated types/enums
-// Import necessary types/enums from Prisma Client
 import type { Prisma } from "@prisma/client";
-// Corrected import paths for internal packages
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import type { RecurringType, TaskStatus } from "@acme/db";
+import type { TaskStatus } from "@acme/db";
 
+import { calculateNextOccurrence } from "../../utils";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import {
   createTaskInputSchema,
   getTasksInputSchema,
   updateTaskInputSchema,
 } from "../validations/task";
-
-// Helper function to calculate the next occurrence date
-const calculateNextOccurrence = (
-  startDate: Date,
-  type: RecurringType,
-): Date => {
-  const nextDate = new Date(startDate);
-  switch (type) {
-    case "DAILY":
-      nextDate.setDate(nextDate.getDate() + 1);
-      break;
-    case "WEEKLY":
-      nextDate.setDate(nextDate.getDate() + 7);
-      break;
-    case "MONTHLY":
-      nextDate.setMonth(nextDate.getMonth() + 1);
-      break;
-  }
-  return nextDate;
-};
 
 export const taskRouter = createTRPCRouter({
   create: protectedProcedure
@@ -83,14 +61,13 @@ export const taskRouter = createTRPCRouter({
           ...input,
           assignedToId: assignedToId,
           nextOccurrence: nextOccurrence,
-          // createdById: userId, // Add if audit fields are used
         },
       });
       return task;
     }),
 
   getAll: protectedProcedure
-    .input(getTasksInputSchema) // Use aliased definition input
+    .input(getTasksInputSchema)
     .query(async ({ ctx, input }) => {
       const { session } = ctx;
       const userId = session.user.id;
@@ -110,16 +87,8 @@ export const taskRouter = createTRPCRouter({
         whereCondition.assignedToId = userId;
       }
 
-      // If cursor is provided, we need to skip that item to avoid duplication
-      if (cursor) {
-        whereCondition.id = {
-          not: cursor, // Exclude the cursor item to prevent duplicates
-        };
-      }
-
       // Admins will not have the assignedToId filter applied,
       // thus fetching all tasks (unless they also provide a status filter).
-
       const tasks = await ctx.prisma.task.findMany({
         take: limit + 1,
         where: whereCondition, // Apply the dynamic where condition
@@ -127,9 +96,10 @@ export const taskRouter = createTRPCRouter({
           cursor: { id: cursor },
           skip: 1, // Skip the cursor item to prevent duplicates
         }),
-        orderBy: {
-          createdAt: "desc",
-        },
+        orderBy: [
+          { createdAt: "desc" },
+          { id: "asc" }, // Add secondary sort by id for stable pagination
+        ],
         include: {
           assignedTo: {
             select: { id: true, name: true, email: true },
@@ -150,7 +120,7 @@ export const taskRouter = createTRPCRouter({
     }),
 
   update: protectedProcedure
-    .input(updateTaskInputSchema) // Use aliased definition input
+    .input(updateTaskInputSchema)
     .mutation(async ({ ctx, input }) => {
       const { session } = ctx;
       const userId = session.user.id;
@@ -228,7 +198,7 @@ export const taskRouter = createTRPCRouter({
     }),
 
   delete: protectedProcedure
-    .input(z.object({ id: z.string() })) // Use aliased definition input
+    .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { session } = ctx;
       const userId = session.user.id;

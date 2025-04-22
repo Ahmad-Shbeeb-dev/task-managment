@@ -9,35 +9,7 @@ import {
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
-
-// Function to reset admin password - can be called manually when needed
-export async function resetAdminPassword() {
-  console.log("Resetting admin password...");
-  const admin = await prisma.user.findUnique({
-    where: { email: "admin@test.com" },
-    include: { Accounts: true },
-  });
-
-  if (!admin) {
-    console.log("Admin user not found");
-    return;
-  }
-
-  const hashedPassword = await bcrypt.hash("asddsa", 10);
-
-  if (admin.Accounts.length > 0) {
-    await prisma.account.update({
-      where: { id: admin.Accounts[0].id },
-      data: {
-        password: hashedPassword,
-        failedSignins: 0,
-      },
-    });
-    console.log("Admin password has been reset to 'asddsa'");
-  } else {
-    console.log("Admin account not found");
-  }
-}
+const ADMIN_PASSWORD = "asddsa";
 
 async function main() {
   let admin = await prisma.user.findFirst({
@@ -45,13 +17,25 @@ async function main() {
   });
 
   if (!admin) {
+    const hashedPassword = await bcrypt.hash(ADMIN_PASSWORD, 10);
+
     admin = await prisma.user.create({
       data: {
+        email: "admin@test.com",
         name: "admin",
         role: "ADMIN",
+        Accounts: {
+          create: {
+            password: hashedPassword,
+            provider: "credentials",
+            type: "credentials",
+          },
+        },
       },
     });
     console.log("Created Super Admin with ID:", admin.id);
+    console.log("Admin email:", admin.email);
+    console.log("Admin password:", ADMIN_PASSWORD);
   } else {
     console.log("Found Super Admin with ID:", admin.id);
   }
@@ -82,7 +66,6 @@ async function main() {
   const hashedPassword = await bcrypt.hash("asddsa", 10);
 
   const testUsers = [
-    { name: "Admin", email: "admin@test.com", role: "ADMIN" as Role },
     { name: "User", email: "user@test.com", role: "USER" as Role },
   ];
   const testUser = await prisma.$transaction(
