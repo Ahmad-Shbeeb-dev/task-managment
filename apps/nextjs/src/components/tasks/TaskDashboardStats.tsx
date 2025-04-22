@@ -36,7 +36,7 @@ export function TaskDashboardStats() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Task Statistics</CardTitle>
+          <CardTitle>Tasks Statistics</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Skeleton className="h-[20px] w-[150px] rounded-full" />
@@ -52,7 +52,7 @@ export function TaskDashboardStats() {
     return (
       <Card className="border-destructive">
         <CardHeader>
-          <CardTitle className="text-destructive">Task Statistics</CardTitle>
+          <CardTitle className="text-destructive">Tasks Statistics</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-destructive">
@@ -67,7 +67,7 @@ export function TaskDashboardStats() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Task Statistics</CardTitle>
+          <CardTitle>Tasks Statistics</CardTitle>
         </CardHeader>
         <CardContent>
           <p>No statistics available.</p>
@@ -95,7 +95,7 @@ export function TaskDashboardStats() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Task Statistics</CardTitle>
+        <CardTitle>Tasks Statistics</CardTitle>
       </CardHeader>
       <CardContent className="space-y-8">
         {/* Tasks by Status Chart (Using Bar Chart) */}

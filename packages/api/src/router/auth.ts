@@ -21,7 +21,7 @@ import {
 } from "../validations/auth";
 
 export const authRouter = createTRPCRouter({
-  getSession: publicProcedure.query(async ({ ctx }) => {
+  getSession: publicProcedure.query(({ ctx }) => {
     let session: Session | null = null;
     if (ctx.session) {
       session = {

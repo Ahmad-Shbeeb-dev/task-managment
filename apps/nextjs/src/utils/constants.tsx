@@ -1,4 +1,8 @@
-import { IconFileAnalytics, IconUserCircle } from "@tabler/icons-react";
+import {
+  IconFileAnalytics,
+  IconListDetails,
+  IconUserCircle,
+} from "@tabler/icons-react";
 
 import type {
   RecurringType,
@@ -15,6 +19,12 @@ export const NAVBAR_LINKS: readonly INavbarLink[] = [
     path: "/dashboard/home",
     label: "Home",
     icon: <IconFileAnalytics size={20} stroke={1.5} />,
+  },
+  {
+    id: "tasks",
+    path: "/dashboard/tasks",
+    label: "Tasks",
+    icon: <IconListDetails size={20} stroke={1.5} />,
   },
   {
     id: "profile",

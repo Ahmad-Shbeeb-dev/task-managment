@@ -14,6 +14,7 @@ export const authValidation = z.object({
 
 export const updateUserValidation = z.object({
   email: authValidation.shape.email.optional(),
+  name: authValidation.shape.name.optional(),
 });
 
 export const registerUserValidation = authValidation

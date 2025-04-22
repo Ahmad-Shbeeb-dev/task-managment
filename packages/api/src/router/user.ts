@@ -3,6 +3,8 @@ import bcrypt from "bcryptjs";
 import { differenceInMinutes, format } from "date-fns";
 import { z } from "zod";
 
+import { adapter } from "@acme/auth";
+
 import {
   createTRPCRouter,
   protectedProcedure,
@@ -162,7 +164,7 @@ export const userRouter = createTRPCRouter({
     .input(updateUserValidation)
     .mutation(async ({ ctx, input }) => {
       const foundUser = await ctx.prisma.user.findUnique({
-        where: { email: input.email },
+        where: { id: ctx.session.user.id },
       });
 
       if (!foundUser)
@@ -175,6 +177,7 @@ export const userRouter = createTRPCRouter({
         where: { id: foundUser.id },
         data: {
           email: input.email,
+          name: input.name,
           updatedBy: ctx.session.user.id,
         },
         select: {
@@ -185,4 +188,16 @@ export const userRouter = createTRPCRouter({
         },
       });
     }),
+
+  getUserProfile: protectedProcedure.query(async ({ ctx }) => {
+    return ctx.prisma.user.findUnique({
+      where: { id: ctx.session.user.id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+      },
+    });
+  }),
 });
