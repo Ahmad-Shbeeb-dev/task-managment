@@ -1,5 +1,3 @@
-"use client";
-
 import { PageShell } from "~/components/shells/PageShell";
 import { AddTaskDialog } from "~/components/tasks/AddTaskDialog";
 import { TaskList } from "~/components/tasks/TaskList";

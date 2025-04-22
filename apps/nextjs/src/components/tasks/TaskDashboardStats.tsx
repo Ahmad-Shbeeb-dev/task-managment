@@ -1,5 +1,6 @@
 "use client";
 
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 import {
   Bar,
   BarChart,
@@ -30,6 +31,7 @@ const STATUS_COLORS: Record<TaskStatus, string> = {
 const CHART_HEIGHT = 300;
 
 export function TaskDashboardStats() {
+  const [parentRef] = useAutoAnimate();
   const { data: statsData, isLoading, error } = api.task.getStats.useQuery();
 
   if (isLoading) {
@@ -97,7 +99,7 @@ export function TaskDashboardStats() {
       <CardHeader>
         <CardTitle>Tasks Statistics</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-8">
+      <CardContent ref={parentRef} className="space-y-8">
         {/* Tasks by Status Chart (Using Bar Chart) */}
         <div>
           <h3 className="mb-4 text-lg font-medium">Tasks by Status</h3>

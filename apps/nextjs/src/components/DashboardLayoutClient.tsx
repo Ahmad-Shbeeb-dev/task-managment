@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { useLocalStorage } from "usehooks-ts";
 
 import type { Session } from "@acme/auth";
+import type { UserRole } from "@acme/db";
 
 import { NAVBAR_LINKS } from "~/utils/constants";
 import { PageTitleContext } from "~/utils/context";
-import type { Role } from "~/types";
 import { Header } from "./Header";
 import { Navbar } from "./Navbar";
 
@@ -21,8 +22,8 @@ export default function DashboardLayoutClient({ session, children }: Props) {
     false,
   );
   const [pageTitle, setPageTitle] = useState<string | null>(null);
-
-  const userRole = session.user.role as Role;
+  const [parent] = useAutoAnimate({ easing: "linear" });
+  const userRole = session.user.role as UserRole;
 
   const filteredNavLinks = NAVBAR_LINKS.filter(
     (link) =>
@@ -30,7 +31,10 @@ export default function DashboardLayoutClient({ session, children }: Props) {
   );
 
   return (
-    <main className="grid grid-cols-5 bg-slate-100/80 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8">
+    <main
+      className="grid grid-cols-5 bg-slate-100/80 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8"
+      ref={parent}
+    >
       <Navbar navbarOpened={navbarOpened} NAVBAR_LINKS={filteredNavLinks} />
       <div
         className={

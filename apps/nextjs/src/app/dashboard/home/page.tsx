@@ -1,5 +1,3 @@
-"use client";
-
 import { PageShell } from "~/components/shells/PageShell";
 import { TaskDashboardStats } from "~/components/tasks/TaskDashboardStats";
 
