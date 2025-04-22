@@ -12,7 +12,7 @@ interface Props {
 export const Navbar = ({ navbarOpened, NAVBAR_LINKS }: Props) => {
   return (
     navbarOpened && (
-      <div className="col-span-1 max-h-full min-h-screen  bg-sky-500/75">
+      <div className="col-span-1 max-h-full min-h-screen bg-sky-500/75 dark:bg-sky-600/75">
         <div className="mb-20 flex flex-col items-center justify-center pt-8">
           <TaskManagmentLogo />
           <h1 className="text-xl font-extrabold text-white">Task Management</h1>

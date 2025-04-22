@@ -97,7 +97,7 @@ export const TaskItem = ({ task }: { task: TaskOutput }) => {
   };
 
   return (
-    <div className="bg-card text-card-foreground mb-3 rounded-lg border p-4 shadow-sm transition-all hover:shadow-md">
+    <div className="bg-card text-card-foreground mb-3 rounded-lg border p-4 shadow-sm transition-all hover:shadow-md dark:border-gray-700 dark:bg-gray-900">
       <div className="flex items-start justify-between">
         <h3 className="mb-1 font-semibold leading-tight">{task.title}</h3>
         <div className="flex items-center gap-2">

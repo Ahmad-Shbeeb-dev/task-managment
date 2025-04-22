@@ -32,7 +32,7 @@ export default function DashboardLayoutClient({ session, children }: Props) {
 
   return (
     <main
-      className="grid grid-cols-5 bg-slate-100/80 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8"
+      className="grid grid-cols-5 bg-slate-100/80 dark:bg-gray-950 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8"
       ref={parent}
     >
       <Navbar navbarOpened={navbarOpened} NAVBAR_LINKS={filteredNavLinks} />

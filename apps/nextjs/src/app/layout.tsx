@@ -11,6 +11,7 @@ import "@uppy/core/dist/style.min.css";
 import "@uppy/drag-drop/dist/style.min.css";
 import "@uppy/status-bar/dist/style.min.css";
 
+import { ThemeProvider } from "~/components/theme/ThemeProvider";
 import { TRPCReactProvider } from "./providers";
 
 const fontSans = Inter({
@@ -24,10 +25,15 @@ export const metadata: Metadata = {
 
 export default function Layout(props: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className={["font-sans", fontSans.variable].join(" ")}>
+    <html lang="en" suppressHydrationWarning className="dark:bg-gray-950">
+      <body
+        className={[
+          "bg-background text-foreground font-sans",
+          fontSans.variable,
+        ].join(" ")}
+      >
         <TRPCReactProvider headers={headers()}>
-          {props.children}
+          <ThemeProvider>{props.children}</ThemeProvider>
         </TRPCReactProvider>
       </body>
     </html>

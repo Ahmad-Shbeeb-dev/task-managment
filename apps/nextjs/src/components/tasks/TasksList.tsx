@@ -44,7 +44,7 @@ export const TasksList = ({
 
   if (tasks.length === 0) {
     return (
-      <p className="text-muted-foreground">
+      <p className="text-muted-foreground dark:text-gray-300">
         {statusFilter === "ALL"
           ? "No tasks found."
           : `No tasks found with status "${statusFilter.replace("_", " ")}".`}

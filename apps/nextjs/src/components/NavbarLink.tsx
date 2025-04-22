@@ -18,7 +18,7 @@ const NavLink = ({ label, path, icon }: INavbarLink) => {
       className={cn(
         " ml-4 px-6 py-2 text-left font-medium text-white hover:text-gray-300",
         {
-          "rounded-l-full bg-white text-black hover:text-black":
+          "rounded-l-full bg-white text-black hover:text-black dark:bg-gray-200 dark:text-gray-900 dark:hover:text-gray-900":
             currentRoute === path,
         },
       )}
@@ -54,7 +54,7 @@ export const NavbarLink = ({ subLinks, ...restProps }: INavbarLink) => {
           <AccordionContent key={nanoid()}>
             <div
               className={cn("flex", {
-                "rounded-l-full bg-white text-black hover:text-black":
+                "rounded-l-full bg-white text-black hover:text-black dark:bg-gray-200 dark:text-gray-900 dark:hover:text-gray-900":
                   currentRoute.includes(link.path),
               })}
             >
