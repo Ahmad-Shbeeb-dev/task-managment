@@ -21,6 +21,10 @@ const fontSans = Inter({
 
 export const metadata: Metadata = {
   title: "Task managment",
+  icons: [
+    { rel: "icon", url: "/favicon.ico", sizes: "any" },
+    { rel: "icon", url: "/favicon.svg", type: "image/svg+xml" },
+  ],
 };
 
 export default function Layout(props: { children: React.ReactNode }) {
