@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useLocalStorage } from "usehooks-ts";
 
 import type { Session } from "@acme/auth";
@@ -22,7 +22,6 @@ export default function DashboardLayoutClient({ session, children }: Props) {
     false,
   );
   const [pageTitle, setPageTitle] = useState<string | null>(null);
-  const [parent] = useAutoAnimate({ easing: "linear" });
   const userRole = session.user.role as UserRole;
 
   const filteredNavLinks = NAVBAR_LINKS.filter(
@@ -31,17 +30,30 @@ export default function DashboardLayoutClient({ session, children }: Props) {
   );
 
   return (
-    <main
-      className="grid grid-cols-5 bg-slate-100/80 dark:bg-gray-950 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8"
-      ref={parent}
-    >
-      <Navbar navbarOpened={navbarOpened} NAVBAR_LINKS={filteredNavLinks} />
-      <div
-        className={
-          navbarOpened
-            ? "col-span-4 flex flex-col md:col-span-4 lg:col-span-5 xl:col-span-7"
-            : "col-span-5 flex flex-col md:col-span-5 lg:col-span-6 xl:col-span-8"
-        }
+    <div className="flex min-h-screen bg-slate-100/80 dark:bg-gray-950">
+      <AnimatePresence>
+        {navbarOpened && (
+          <div className="fixed left-0 top-0 z-50 h-full">
+            <Navbar
+              key="navbar"
+              navbarOpened={navbarOpened}
+              NAVBAR_LINKS={filteredNavLinks}
+            />
+          </div>
+        )}
+      </AnimatePresence>
+
+      <motion.div
+        className="flex w-full flex-col"
+        initial={false}
+        animate={{
+          marginLeft: navbarOpened ? "200px" : "0", // Adjust this value based on your navbar width
+        }}
+        transition={{
+          type: "spring",
+          stiffness: 300,
+          damping: 30,
+        }}
       >
         <PageTitleContext.Provider value={{ pageTitle, setPageTitle }}>
           <Header
@@ -51,7 +63,7 @@ export default function DashboardLayoutClient({ session, children }: Props) {
           />
           {children}
         </PageTitleContext.Provider>
-      </div>
-    </main>
+      </motion.div>
+    </div>
   );
 }

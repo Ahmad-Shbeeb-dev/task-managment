@@ -1,6 +1,7 @@
 "use client";
 
 import type { TRPCClientErrorLike } from "@trpc/client";
+import { motion } from "framer-motion";
 
 import { Button } from "~/components/ui/Button";
 import type { TaskOutput, ViewMode } from "~/types";
@@ -18,6 +19,23 @@ interface TasksListProps {
   fetchNextPage?: () => void;
   viewMode: ViewMode;
 }
+
+// Animation variants for container
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+// Animation variants for individual items
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } },
+};
 
 export const TasksList = ({
   tasks,
@@ -62,11 +80,18 @@ export const TasksList = ({
     return <KanbanBoard tasks={tasks} isLoading={false} />;
   }
 
-  // List view
+  // List view with animation
   return (
-    <div>
-      {tasks.map((task: TaskOutput) => (
-        <TaskItem key={task.id} task={task} />
+    <motion.div
+      className="space-y-3"
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+    >
+      {tasks.map((task: TaskOutput, index: number) => (
+        <motion.div key={task.id} variants={itemVariants} custom={index}>
+          <TaskItem task={task} />
+        </motion.div>
       ))}
       {hasNextPage && (
         <div className="mt-4 text-center">
@@ -79,6 +104,6 @@ export const TasksList = ({
           </Button>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 };

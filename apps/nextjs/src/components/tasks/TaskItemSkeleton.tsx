@@ -7,7 +7,7 @@ export const TaskItemSkeleton = ({
 }: {
   isKanbanView?: boolean;
 }) => (
-  <div className="mb-3 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+  <div className="dark:bg-card mb-3 rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700">
     <div className="flex items-start justify-between">
       <Skeleton className="mb-1 h-5 w-3/5" /> {/* Title */}
       {!isKanbanView && <Skeleton className="h-8 w-[130px]" />}{" "}

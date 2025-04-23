@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { IconPlus } from "@tabler/icons-react";
 import type { DropResult } from "react-beautiful-dnd";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { toast } from "sonner";
@@ -9,23 +10,47 @@ import type { TaskStatus } from "@acme/db";
 
 import { api } from "~/utils/api";
 import { TASK_STATUSES } from "~/utils/constants";
+import { cn } from "~/utils/ui";
+import { Badge } from "~/components/ui/Badge";
+import { Button } from "~/components/ui/Button";
+import { MotionCard, MotionDiv } from "~/components/ui/MotionComponents";
 import type { TaskOutput } from "~/types";
 import { TaskItem } from "./TaskItem";
 import { TaskItemSkeleton } from "./TaskItemSkeleton";
 
-// Define the column titles
-const COLUMN_TITLES: Record<TaskStatus, string> = {
-  TODO: "To Do",
-  IN_PROGRESS: "In Progress",
-  DONE: "Done",
+// Define the column titles and colors
+const COLUMN_CONFIG: Record<
+  TaskStatus,
+  { title: string; color: string; hoverColor: string }
+> = {
+  TODO: {
+    title: "To Do",
+    color: "bg-blue-200/20 dark:bg-blue-950/30",
+    hoverColor: "hover:bg-blue-100/80 dark:hover:bg-blue-950/50",
+  },
+  IN_PROGRESS: {
+    title: "In Progress",
+    color: "bg-amber-200/20 dark:bg-amber-950/30",
+    hoverColor: "hover:bg-amber-100/80 dark:hover:bg-amber-950/50",
+  },
+  DONE: {
+    title: "Done",
+    color: "bg-green-50 dark:bg-green-950/30",
+    hoverColor: "hover:bg-green-100/80 dark:hover:bg-green-950/50",
+  },
 };
 
 interface KanbanBoardProps {
   tasks: TaskOutput[];
   isLoading: boolean;
+  onAddTask?: () => void;
 }
 
-export const KanbanBoard = ({ tasks, isLoading }: KanbanBoardProps) => {
+export const KanbanBoard = ({
+  tasks,
+  isLoading,
+  onAddTask,
+}: KanbanBoardProps) => {
   // Helper function to group tasks by status
   const getGroupedTasks = (
     taskList: TaskOutput[],
@@ -126,21 +151,28 @@ export const KanbanBoard = ({ tasks, isLoading }: KanbanBoardProps) => {
   // Loading state
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        {TASK_STATUSES.map((status) => (
-          <div
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        {TASK_STATUSES.map((status, index) => (
+          <MotionCard
             key={status}
-            className="flex flex-col rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+            animateType="fadeIn"
+            delay={index * 0.15}
+            className={cn(
+              "flex flex-col rounded-xl border border-transparent p-0",
+              COLUMN_CONFIG[status].color,
+            )}
           >
-            <h2 className="mb-4 text-lg font-semibold">
-              {COLUMN_TITLES[status]}
-            </h2>
-            <div className="space-y-3">
+            <div className="border-b border-gray-200/40 p-4 dark:border-gray-700/40">
+              <h2 className="text-xl font-semibold tracking-tight">
+                {COLUMN_CONFIG[status].title}
+              </h2>
+            </div>
+            <div className="space-y-3 p-4">
               {Array.from({ length: 2 }).map((_, i) => (
                 <TaskItemSkeleton key={i} isKanbanView={true} />
               ))}
             </div>
-          </div>
+          </MotionCard>
         ))}
       </div>
     );
@@ -148,21 +180,38 @@ export const KanbanBoard = ({ tasks, isLoading }: KanbanBoardProps) => {
 
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        {TASK_STATUSES.map((status) => (
-          <div
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        {TASK_STATUSES.map((status, index) => (
+          <MotionCard
             key={status}
-            className="flex flex-col rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+            animateType="fadeIn"
+            delay={index * 0.15}
+            className={cn(
+              "flex min-h-[350px] flex-col rounded-xl border border-transparent p-0 transition-colors duration-200",
+              COLUMN_CONFIG[status].color,
+              COLUMN_CONFIG[status].hoverColor,
+            )}
           >
-            <h2 className="mb-4 text-lg font-semibold">
-              {COLUMN_TITLES[status]}
-            </h2>
+            <div className="border-b border-gray-200/40 p-4 dark:border-gray-700/40">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold tracking-tight">
+                  {COLUMN_CONFIG[status].title}
+                </h2>
+                <Badge
+                  variant="outline"
+                  className="font-medium dark:border-gray-700"
+                >
+                  {groupedTasks[status]?.length || 0}
+                </Badge>
+              </div>
+            </div>
+
             <Droppable droppableId={status}>
               {(provided) => (
                 <div
                   {...provided.droppableProps}
                   ref={provided.innerRef}
-                  className="flex min-h-[200px] flex-grow flex-col space-y-3"
+                  className="flex h-full flex-grow flex-col p-3"
                 >
                   {groupedTasks[status]?.map((task, index) => (
                     <Draggable
@@ -176,7 +225,13 @@ export const KanbanBoard = ({ tasks, isLoading }: KanbanBoardProps) => {
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
-                          className={`${snapshot.isDragging ? "opacity-75" : ""}`}
+                          className={cn(
+                            " mb-3",
+                            snapshot.isDragging
+                              ? "z-10 scale-[1.02] opacity-75"
+                              : "",
+                          )}
+                          style={provided.draggableProps.style}
                           data-task-id={task.id}
                         >
                           <TaskItem task={task} isKanbanView={true} />
@@ -186,14 +241,33 @@ export const KanbanBoard = ({ tasks, isLoading }: KanbanBoardProps) => {
                   ))}
                   {provided.placeholder}
                   {groupedTasks[status]?.length === 0 && (
-                    <div className="flex h-full items-center justify-center p-8 text-sm text-gray-500">
-                      No tasks
-                    </div>
+                    <MotionDiv
+                      className="flex h-full items-center justify-center p-8 text-sm text-gray-500"
+                      animateType="fadeIn"
+                      delay={0.3}
+                    >
+                      {status === "TODO" && onAddTask ? (
+                        <div className="flex flex-col items-center gap-2 text-center">
+                          <p>No tasks</p>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="mt-2 gap-1"
+                            onClick={onAddTask}
+                          >
+                            <IconPlus className="h-3.5 w-3.5" />
+                            Add Task
+                          </Button>
+                        </div>
+                      ) : (
+                        "No tasks"
+                      )}
+                    </MotionDiv>
                   )}
                 </div>
               )}
             </Droppable>
-          </div>
+          </MotionCard>
         ))}
       </div>
     </DragDropContext>

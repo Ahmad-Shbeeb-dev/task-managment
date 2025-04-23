@@ -16,16 +16,16 @@ const NavLink = ({ label, path, icon }: INavbarLink) => {
     <Link
       href={path}
       className={cn(
-        " ml-4 px-6 py-2 text-left font-medium text-white hover:text-gray-300",
+        "ml-4 block px-6 py-2 text-left font-medium text-white hover:text-gray-300",
         {
-          "rounded-l-full bg-white text-black hover:text-black dark:bg-gray-200 dark:text-gray-900 dark:hover:text-gray-900":
+          "rounded-l-full bg-white text-black hover:text-black dark:bg-gray-900 dark:text-white dark:hover:text-white/80":
             currentRoute === path,
         },
       )}
     >
       <div className="flex items-center gap-3">
         {icon}
-        <p className="text-sm md:text-base	">{label}</p>
+        <p className="text-sm md:text-base">{label}</p>
       </div>
     </Link>
   );
@@ -43,8 +43,8 @@ export const NavbarLink = ({ subLinks, ...restProps }: INavbarLink) => {
         "ml-4 w-full pl-6 pr-4 text-left font-medium text-white hover:text-gray-300",
       )}
     >
-      <AccordionItem value={restProps.id}>
-        <AccordionTrigger>
+      <AccordionItem value={restProps.id} className="border-0">
+        <AccordionTrigger className="py-2">
           <div className="flex items-center gap-3">
             {restProps.icon}
             {restProps.label}
@@ -54,7 +54,7 @@ export const NavbarLink = ({ subLinks, ...restProps }: INavbarLink) => {
           <AccordionContent key={nanoid()}>
             <div
               className={cn("flex", {
-                "rounded-l-full bg-white text-black hover:text-black dark:bg-gray-200 dark:text-gray-900 dark:hover:text-gray-900":
+                "rounded-l-full bg-white text-black hover:text-black dark:bg-gray-900 dark:text-white dark:hover:text-white/80":
                   currentRoute.includes(link.path),
               })}
             >

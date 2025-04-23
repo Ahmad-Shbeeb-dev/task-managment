@@ -12,7 +12,7 @@ export const TaskViewToggle = ({
 }) => {
   return (
     <div className="mb-4 flex justify-end">
-      <div className="inline-flex rounded-md shadow-sm">
+      <div className="inline-flex rounded-md border border-gray-200 shadow-sm dark:border-gray-700">
         <Toggle
           pressed={viewMode === "list"}
           onPressedChange={() => onViewModeChange("list")}
