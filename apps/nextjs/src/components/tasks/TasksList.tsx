@@ -3,7 +3,8 @@
 import type { TRPCClientErrorLike } from "@trpc/client";
 
 import { Button } from "~/components/ui/Button";
-import type { TaskOutput } from "~/types";
+import type { TaskOutput, ViewMode } from "~/types";
+import { KanbanBoard } from "./KanbanBoard";
 import { TaskItem } from "./TaskItem";
 import { TaskItemSkeleton } from "./TaskItemSkeleton";
 
@@ -15,6 +16,7 @@ interface TasksListProps {
   hasNextPage?: boolean;
   isFetchingNextPage?: boolean;
   fetchNextPage?: () => void;
+  viewMode: ViewMode;
 }
 
 export const TasksList = ({
@@ -25,20 +27,23 @@ export const TasksList = ({
   hasNextPage,
   isFetchingNextPage,
   fetchNextPage,
+  viewMode,
 }: TasksListProps) => {
-  if (isLoading) {
-    return (
-      <div className="space-y-3">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <TaskItemSkeleton key={i} />
-        ))}
-      </div>
-    );
-  }
-
   if (error) {
     return (
       <p className="text-destructive">Error loading tasks: {error.message}</p>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        {viewMode === "list" ? (
+          Array.from({ length: 3 }).map((_, i) => <TaskItemSkeleton key={i} />)
+        ) : (
+          <KanbanBoard tasks={[]} isLoading={true} />
+        )}
+      </div>
     );
   }
 
@@ -52,13 +57,17 @@ export const TasksList = ({
     );
   }
 
+  // When in Kanban view, we always show all statuses, filter is not applicable
+  if (viewMode === "kanban") {
+    return <KanbanBoard tasks={tasks} isLoading={false} />;
+  }
+
+  // List view
   return (
-    <>
-      <div>
-        {tasks.map((task: TaskOutput) => (
-          <TaskItem key={task.id} task={task} />
-        ))}
-      </div>
+    <div>
+      {tasks.map((task: TaskOutput) => (
+        <TaskItem key={task.id} task={task} />
+      ))}
       {hasNextPage && (
         <div className="mt-4 text-center">
           <Button
@@ -70,6 +79,6 @@ export const TasksList = ({
           </Button>
         </div>
       )}
-    </>
+    </div>
   );
 };

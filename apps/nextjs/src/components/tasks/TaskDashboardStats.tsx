@@ -18,6 +18,7 @@ import {
 import type { TaskStatus } from "@acme/db";
 
 import { api } from "~/utils/api";
+import { RefreshButton } from "~/components/RefreshButton";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/Card";
 import { Skeleton } from "~/components/ui/Skeleton";
 
@@ -33,12 +34,18 @@ const CHART_HEIGHT = 300;
 export function TaskDashboardStats() {
   const [parentRef] = useAutoAnimate();
   const { data: statsData, isLoading, error } = api.task.getStats.useQuery();
+  const utils = api.useUtils();
+
+  const handleRefresh = () => {
+    void utils.task.getStats.invalidate();
+  };
 
   if (isLoading) {
     return (
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Tasks Statistics</CardTitle>
+          <RefreshButton handleRefresh={handleRefresh} />
         </CardHeader>
         <CardContent className="space-y-4">
           <Skeleton className="h-[20px] w-[150px] rounded-full" />
@@ -53,8 +60,9 @@ export function TaskDashboardStats() {
   if (error) {
     return (
       <Card className="border-destructive">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-destructive">Tasks Statistics</CardTitle>
+          <RefreshButton handleRefresh={handleRefresh} />
         </CardHeader>
         <CardContent>
           <p className="text-destructive">
@@ -68,8 +76,9 @@ export function TaskDashboardStats() {
   if (!statsData) {
     return (
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Tasks Statistics</CardTitle>
+          <RefreshButton handleRefresh={handleRefresh} />
         </CardHeader>
         <CardContent>
           <p>No statistics available.</p>
@@ -96,8 +105,9 @@ export function TaskDashboardStats() {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Tasks Statistics</CardTitle>
+        <RefreshButton handleRefresh={handleRefresh} />
       </CardHeader>
       <CardContent ref={parentRef} className="space-y-8">
         {/* Tasks by Status Chart (Using Bar Chart) */}

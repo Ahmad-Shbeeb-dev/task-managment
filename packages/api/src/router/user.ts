@@ -1,9 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import bcrypt from "bcryptjs";
-import { differenceInMinutes, format } from "date-fns";
+import { differenceInMinutes } from "date-fns";
 import { z } from "zod";
-
-import { adapter } from "@acme/auth";
 
 import {
   createTRPCRouter,
@@ -119,7 +117,14 @@ export const userRouter = createTRPCRouter({
     }),
 
   getAll: protectedProcedureAdmin.query(async ({ ctx }) => {
-    return ctx.prisma.user.findMany({});
+    return ctx.prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+      },
+    });
   }),
 
   getNotificationToken: protectedProcedure

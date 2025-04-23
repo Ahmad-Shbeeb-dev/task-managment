@@ -34,3 +34,5 @@ export interface IUrlSorting {
 
 // Infer the output type for a single task
 export type TaskOutput = RouterOutputs["task"]["getAll"]["tasks"][number];
+
+export type ViewMode = "list" | "kanban";

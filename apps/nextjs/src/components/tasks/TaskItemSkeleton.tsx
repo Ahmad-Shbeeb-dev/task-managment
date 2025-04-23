@@ -2,11 +2,16 @@
 
 import { Skeleton } from "~/components/ui/Skeleton";
 
-export const TaskItemSkeleton = () => (
+export const TaskItemSkeleton = ({
+  isKanbanView,
+}: {
+  isKanbanView?: boolean;
+}) => (
   <div className="mb-3 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
     <div className="flex items-start justify-between">
       <Skeleton className="mb-1 h-5 w-3/5" /> {/* Title */}
-      <Skeleton className="h-8 w-[130px]" /> {/* Status Select */}
+      {!isKanbanView && <Skeleton className="h-8 w-[130px]" />}{" "}
+      {/* Status Select */}
     </div>
     <Skeleton className="mb-3 h-4 w-4/5" /> {/* Description */}
     <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">

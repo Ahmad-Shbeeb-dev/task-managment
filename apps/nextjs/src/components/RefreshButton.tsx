@@ -6,15 +6,19 @@ import { Button } from "./ui/Button";
 
 interface Props {
   handleRefresh: () => void;
+  className?: string;
 }
-export const RefreshButton = ({ handleRefresh }: Props) => {
+export const RefreshButton = ({ handleRefresh, className }: Props) => {
   const isFetching = useIsFetching();
 
   return (
     <Button
       disabled={!!isFetching}
       size="icon"
-      className="h-6 w-10 bg-transparent text-stone-700/95 hover:bg-transparent hover:text-stone-700/60"
+      className={cn(
+        "h-6 w-10 bg-transparent text-gray-300/75 hover:bg-transparent hover:text-gray-300/40",
+        className,
+      )}
       onClick={() => handleRefresh()}
       type="button"
     >

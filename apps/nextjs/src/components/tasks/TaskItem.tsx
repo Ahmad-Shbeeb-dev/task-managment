@@ -47,7 +47,13 @@ const getPriorityBadgeVariant = (
   }
 };
 
-export const TaskItem = ({ task }: { task: TaskOutput }) => {
+export const TaskItem = ({
+  task,
+  isKanbanView,
+}: {
+  task: TaskOutput;
+  isKanbanView?: boolean;
+}) => {
   const utils = api.useUtils();
   const { data: session } = useSession();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -101,23 +107,25 @@ export const TaskItem = ({ task }: { task: TaskOutput }) => {
       <div className="flex items-start justify-between">
         <h3 className="mb-1 font-semibold leading-tight">{task.title}</h3>
         <div className="flex items-center gap-2">
-          {/* Status Update Select Dropdown */}
-          <Select
-            value={task.status}
-            onValueChange={(value: TaskStatus) => handleStatusChange(value)}
-            disabled={updateTaskStatusMutation.isLoading}
-          >
-            <SelectTrigger className="w-[130px] text-xs">
-              <SelectValue placeholder="Change status" />
-            </SelectTrigger>
-            <SelectContent>
-              {TASK_STATUSES.map((status) => (
-                <SelectItem key={status} value={status} className="text-xs">
-                  {status.replace("_", " ")}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {/* Status Update Select Dropdown - Only show when not in kanban view */}
+          {!isKanbanView && (
+            <Select
+              value={task.status}
+              onValueChange={(value: TaskStatus) => handleStatusChange(value)}
+              disabled={updateTaskStatusMutation.isLoading}
+            >
+              <SelectTrigger className="w-[130px] text-xs">
+                <SelectValue placeholder="Change status" />
+              </SelectTrigger>
+              <SelectContent>
+                {TASK_STATUSES.map((status) => (
+                  <SelectItem key={status} value={status} className="text-xs">
+                    {status.replace("_", " ")}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
 
           {/* Edit Button - Only for Admins */}
           {isAdmin && (

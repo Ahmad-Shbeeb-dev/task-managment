@@ -79,11 +79,15 @@ export const taskRouter = createTRPCRouter({
       const limit = input?.limit ?? 20;
       const cursor = input?.cursor;
       const statusFilter = input?.status; // Get the status filter
+      const userFilter = input?.assignedToId; // Get the user filter
+      const sortOrder = input?.sortOrder ?? "desc"; // Get the sort order, default to descending (newest first)
 
       // Define the base query conditions
       const whereCondition: Prisma.TaskWhereInput = {
         // Apply status filter if provided
         ...(statusFilter && { status: statusFilter }),
+        // Apply user filter if provided
+        ...(userFilter && { assignedToId: userFilter }),
       };
 
       // If the user is not an admin, only fetch tasks assigned to them
@@ -91,8 +95,8 @@ export const taskRouter = createTRPCRouter({
         whereCondition.assignedToId = userId;
       }
 
-      // Admins will not have the assignedToId filter applied,
-      // thus fetching all tasks (unless they also provide a status filter).
+      // Admins will not have the assignedToId filter applied by default,
+      // thus fetching all tasks (unless they provide a filter).
       const tasks = await ctx.prisma.task.findMany({
         take: limit + 1,
         where: whereCondition, // Apply the dynamic where condition
@@ -101,7 +105,7 @@ export const taskRouter = createTRPCRouter({
           skip: 1, // Skip the cursor item to prevent duplicates
         }),
         orderBy: [
-          { createdAt: "desc" },
+          { dueDate: sortOrder }, // Use the provided sort order
           { id: "asc" }, // Add secondary sort by id for stable pagination
         ],
         include: {

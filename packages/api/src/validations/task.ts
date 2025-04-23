@@ -60,12 +60,13 @@ export const getTasksInputSchema = z
   .object({
     // Filters
     status: taskStatusEnum.optional(), // Use Zod enum for validation
-    // assignedToId: z.string().optional(), // Can add more filters later
+    assignedToId: z.string().optional(), // Filter by user ID
+    sortOrder: z.enum(["asc", "desc"]).default("desc"), // Sort order for createdAt
     // Add pagination, sorting etc. as needed
     limit: z.number().min(1).max(100).default(20),
     cursor: z.string().nullish(), // cursor for infinite scrolling
   })
-  .optional(); // Making the whole input optional for simple GET all
+  .optional();
 
 export type AddTaskFormType = z.infer<typeof createTaskInputSchema>;
 export type UpdateTaskFormType = z.infer<typeof updateTaskInputSchema>;
