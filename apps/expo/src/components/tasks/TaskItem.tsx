@@ -152,7 +152,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({ item, index = 0 }) => {
 
   return (
     <AnimatedListItem
-      delay={0.1 + index * 0.05}
+      delay={0.1 + index * 0.1}
       style={[styles.itemContainer, getContainerStyle(isDone)]}
     >
       <VStack space="sm">

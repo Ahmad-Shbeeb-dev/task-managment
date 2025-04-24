@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useColorScheme } from "react-native";
+import * as SecureStore from "expo-secure-store";
 import { config as defaultConfig } from "@gluestack-ui/config";
 import { createConfig, GluestackUIProvider } from "@gluestack-ui/themed";
 
@@ -9,6 +10,9 @@ interface ThemeContextType {
   theme: ThemeType;
   toggleTheme: () => void;
 }
+
+// SecureStore key for theme
+const THEME_STORAGE_KEY = "app_theme_mode";
 
 // Create the context
 const ThemeContext = createContext<ThemeContextType>({
@@ -26,13 +30,37 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   // Get the device color scheme
   const colorScheme = useColorScheme();
   const [theme, setTheme] = useState<ThemeType>(colorScheme! || "light");
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Update theme when device color scheme changes
+  // Load saved theme preference on mount
   useEffect(() => {
-    if (colorScheme) {
-      setTheme(colorScheme as ThemeType);
+    const loadSavedTheme = async () => {
+      try {
+        const savedTheme = await SecureStore.getItemAsync(THEME_STORAGE_KEY);
+        if (savedTheme && (savedTheme === "light" || savedTheme === "dark")) {
+          setTheme(savedTheme as ThemeType);
+        } else if (colorScheme) {
+          // If no saved theme, use device preference
+          setTheme(colorScheme as ThemeType);
+        }
+      } catch (error) {
+        console.error("Failed to load theme from storage:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void loadSavedTheme();
+  }, []);
+
+  // Save theme changes to secure storage
+  useEffect(() => {
+    if (!isLoading) {
+      SecureStore.setItemAsync(THEME_STORAGE_KEY, theme).catch((error) => {
+        console.error("Failed to save theme to storage:", error);
+      });
     }
-  }, [colorScheme]);
+  }, [theme, isLoading]);
 
   // Toggle theme function
   const toggleTheme = () => {
