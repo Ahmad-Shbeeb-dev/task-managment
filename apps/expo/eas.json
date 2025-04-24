@@ -9,11 +9,17 @@
       "ios": {
         "resourceClass": "m-medium"
       }
+      // "env": {
+      //   "GOOGLE_SERVICES_JSON": "/home/ahmad/Projects/MERN-Task3/apps/expo/google-services.json"
+      // }
     },
     "development": {
       "extends": "base",
       "developmentClient": true,
       "distribution": "internal"
+      // "env": {
+      //   "GOOGLE_SERVICES_JSON": "/home/ahmad/Projects/MERN-Task3/apps/expo/google-services.json"
+      // }
     },
     "preview": {
       "extends": "base",
@@ -21,14 +27,17 @@
       "ios": {
         "simulator": true
       }
+      // "env": {
+      //   "GOOGLE_SERVICES_JSON": "/home/ahmad/Projects/MERN-Task3/apps/expo/google-services.json"
+      // }
     },
     "production": {
       "extends": "base",
       // "developmentClient": true
-      "android": { "buildType": "apk" },
-      "env": {
-        "GOOGLE_SERVICES_JSON": "./google-services.json"
-      }
+      "android": { "buildType": "apk" }
+      // "env": {
+      //   "GOOGLE_SERVICES_JSON": "/home/ahmad/Projects/MERN-Task3/apps/expo/google-services.json"
+      // }
     }
   },
   "submit": {

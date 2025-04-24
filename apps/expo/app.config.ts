@@ -28,7 +28,9 @@ const defineConfig = (): ExpoConfig => ({
       backgroundColor: "#1F104A",
     },
     package: "com.task.managment",
-    googleServicesFile: process.env.GOOGLE_SERVICES_JSON,
+    googleServicesFile:
+      process.env.GOOGLE_SERVICES_JSON ??
+      "/home/ahmad/Projects/MERN-Task3/apps/expo/google-services.json",
     versionCode: 1,
     permissions: [
       "android.permission.RECEIVE_BOOT_COMPLETED",
@@ -72,7 +74,6 @@ const defineConfig = (): ExpoConfig => ({
       {
         icon: "./assets/icon.png",
         color: "#ffffff",
-        sounds: [],
       },
     ],
   ],

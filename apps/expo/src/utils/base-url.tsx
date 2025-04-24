@@ -17,7 +17,7 @@ export const getBaseUrl = () => {
   const localhost = debuggerHost?.split(":")[0];
 
   if (!localhost) {
-    return "https://task-managment-zart-testing.vercel.app";
+    return "https://task-managment-ahmad.vercel.app";
     throw new Error(
       "Failed to get localhost. Please point to your production server.",
     );

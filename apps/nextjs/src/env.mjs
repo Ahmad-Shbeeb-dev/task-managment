@@ -34,6 +34,7 @@ export const env = createEnv({
     DATABASE_URL: process.env.DATABASE_URL,
     NODE_MAILER_EMAIL: process.env.NODE_MAILER_EMAIL,
     NODE_MAILER_PASSWORD: process.env.NODE_MAILER_PASSWORD,
+    GOOGLE_SERVICES_JSON: process.env.GOOGLE_SERVICES_JSON,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   skipValidation: !!process.env.CI || !!process.env.SKIP_ENV_VALIDATION,

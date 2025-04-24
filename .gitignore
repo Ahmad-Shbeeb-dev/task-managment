@@ -50,3 +50,4 @@ yarn-error.log*
 
 # Firebase credentials
 *-firebase-adminsdk-*.json
+google-services.json

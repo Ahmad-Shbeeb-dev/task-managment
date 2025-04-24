@@ -28,6 +28,7 @@ export async function sendPushNotification(message: ExpoNotificationMessage) {
     console.log("Sending push notification to:", message.to);
 
     const response = await fetch("https://exp.host/--/api/v2/push/send", {
+      cache: "no-store",
       method: "POST",
       headers: {
         Accept: "application/json",

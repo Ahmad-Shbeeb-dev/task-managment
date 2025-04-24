@@ -241,8 +241,8 @@ export const taskRouter = createTRPCRouter({
 
         await sendPushNotification({
           to: userToNotify.notificationToken,
-          title: "New Task Assigned",
-          body: `You have been assigned a new task: ${input.title}`,
+          title: "Task Updated",
+          body: `The task ${input.title} has been updated.`,
           data: {
             taskId: task.id,
           },
