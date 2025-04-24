@@ -6,9 +6,12 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withDelay,
+  withRepeat,
   withSpring,
   withTiming,
 } from "react-native-reanimated";
+import { RepeatIcon } from "@gluestack-ui/themed";
+import { useIsFetching } from "@tanstack/react-query";
 
 // Base motion props
 interface BaseProps {
@@ -242,6 +245,37 @@ export const AnimatedPressable = ({
       {...props}
     >
       {children}
+    </Animated.View>
+  );
+};
+
+// Animated RepeatIcon component
+export const AnimatedRepeatIcon = ({ color }: { color: string }) => {
+  const isFetching = useIsFetching();
+  const rotation = useSharedValue(0);
+
+  React.useEffect(() => {
+    if (isFetching) {
+      rotation.value = 0;
+      rotation.value = withRepeat(
+        withTiming(360, { duration: 1000 }),
+        -1, // Infinite repetitions
+        false, // Don't reverse the animation
+      );
+    } else {
+      rotation.value = withTiming(0, { duration: 300 });
+    }
+  }, [isFetching, rotation]);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ rotateZ: `${rotation.value}deg` }],
+    };
+  });
+
+  return (
+    <Animated.View style={animatedStyle}>
+      <RepeatIcon color={color} />
     </Animated.View>
   );
 };

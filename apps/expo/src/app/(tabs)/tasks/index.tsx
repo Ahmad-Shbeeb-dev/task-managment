@@ -71,20 +71,6 @@ export default function TasksScreen() {
     );
   };
 
-  const renderListHeader = () => {
-    return (
-      <View style={styles.headerContainer}>
-        <Header onRefresh={handleRefresh} />
-        <TaskFilters
-          status={statusFilter}
-          sortOrder={sortOrder}
-          onStatusChange={handleStatusFilterChange}
-          onSortOrderChange={handleSortOrderChange}
-        />
-      </View>
-    );
-  };
-
   return (
     <SafeAreaView
       style={[
@@ -93,6 +79,14 @@ export default function TasksScreen() {
       ]}
       edges={["left", "right", "bottom"]}
     >
+      <Header onRefresh={handleRefresh} />
+      <TaskFilters
+        status={statusFilter}
+        sortOrder={sortOrder}
+        onStatusChange={handleStatusFilterChange}
+        onSortOrderChange={handleSortOrderChange}
+      />
+
       {isLoading ? (
         <FlatList
           data={[]}
@@ -100,7 +94,6 @@ export default function TasksScreen() {
           keyExtractor={() => "loading"}
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={renderListEmpty}
-          ListHeaderComponent={renderListHeader}
         />
       ) : (
         <FlatList
@@ -112,7 +105,6 @@ export default function TasksScreen() {
           contentContainerStyle={styles.listContent}
           ListFooterComponent={renderListFooter}
           ListEmptyComponent={renderListEmpty}
-          ListHeaderComponent={renderListHeader}
           onEndReached={loadMore}
           onEndReachedThreshold={0.3}
           refreshControl={
@@ -139,6 +131,5 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     marginBottom: 16,
-    marginTop: -16,
   },
 });

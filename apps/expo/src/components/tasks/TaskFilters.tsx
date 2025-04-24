@@ -49,7 +49,7 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
       <HStack space="md" alignItems="center" justifyContent="space-between">
         <Text
           size="sm"
-          style={{ color: theme === "dark" ? "#D1D5DB" : "#6B7280" }}
+          style={{ color: theme === "dark" ? "#F3F4F6" : "#6B7280" }}
         >
           Filters:
         </Text>
@@ -62,8 +62,17 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
           }}
           minWidth={130}
         >
-          <SelectTrigger variant="outline" size="sm">
-            <SelectInput placeholder="Status" />
+          <SelectTrigger
+            variant="outline"
+            size="sm"
+            style={{
+              borderColor: theme === "dark" ? "#4B5563" : "#E5E7EB",
+            }}
+          >
+            <SelectInput
+              placeholder="Status"
+              color={theme === "dark" ? "#F9FAFB" : "#374151"}
+            />
           </SelectTrigger>
           <SelectPortal>
             <SelectBackdrop />
@@ -91,8 +100,17 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
           }}
           minWidth={130}
         >
-          <SelectTrigger variant="outline" size="sm">
-            <SelectInput placeholder="Sort" />
+          <SelectTrigger
+            variant="outline"
+            size="sm"
+            style={{
+              borderColor: theme === "dark" ? "#4B5563" : "#E5E7EB",
+            }}
+          >
+            <SelectInput
+              placeholder="Sort"
+              color={theme === "dark" ? "#F9FAFB" : "#374151"}
+            />
           </SelectTrigger>
           <SelectPortal>
             <SelectBackdrop />
@@ -115,6 +133,6 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 12,
     borderWidth: 1,
-    marginVertical: 16,
+    marginVertical: 8,
   },
 });

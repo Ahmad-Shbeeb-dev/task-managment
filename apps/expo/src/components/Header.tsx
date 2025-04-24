@@ -1,10 +1,10 @@
 import React from "react";
 import { Pressable, StyleSheet, View } from "react-native";
-import { HStack, RepeatIcon, Text } from "@gluestack-ui/themed";
+import { HStack, Text } from "@gluestack-ui/themed";
 import { format } from "date-fns";
 
 import { useTheme } from "~/utils/ThemeProvider";
-import { AnimatedBox } from "./ui/MotionComponents";
+import { AnimatedBox, AnimatedRepeatIcon } from "./ui/MotionComponents";
 import { ThemeToggle } from "./ui/ThemeToggle";
 
 interface HeaderProps {
@@ -18,7 +18,6 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ title, onRefresh }) => {
   const { theme } = useTheme();
   const today = format(new Date(), "MMMM - EEE dd");
-
   return (
     <AnimatedBox
       animateType="fadeIn"
@@ -58,16 +57,18 @@ export const Header: React.FC<HeaderProps> = ({ title, onRefresh }) => {
           <Pressable
             style={[
               styles.iconButton,
-              { backgroundColor: theme === "dark" ? "#374151" : "#F3F4F6" },
+              { backgroundColor: theme === "dark" ? "#4B5563" : "#F3F4F6" },
             ]}
             onPress={onRefresh}
           >
             <Text
               fontSize="$sm"
-              color={theme === "dark" ? "#D1D5DB" : "#4B5563"}
+              color={theme === "dark" ? "#F9FAFB" : "#4B5563"}
               fontWeight="$bold"
             >
-              <RepeatIcon />
+              <AnimatedRepeatIcon
+                color={theme === "dark" ? "#F9FAFB" : "#4B5563"}
+              />
             </Text>
           </Pressable>
         ) : (

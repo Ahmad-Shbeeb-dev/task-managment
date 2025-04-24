@@ -5,6 +5,7 @@ import Profile from "assets/icons/profile.svg";
 import { nanoid } from "nanoid/non-secure";
 
 import { api } from "~/utils/api";
+import { useTheme } from "~/utils/ThemeProvider";
 import { useRegisterNotification } from "~/hooks/useRegisterNotification";
 
 interface TabDefinition {
@@ -29,8 +30,14 @@ const TABS: readonly TabDefinition[] = [
 
 export default function TabsLayout() {
   const { expoPushToken, notification } = useRegisterNotification();
+  const { theme } = useTheme();
 
   const { data: session, isLoading, isError } = api.auth.getSession.useQuery();
+
+  // Light/dark theme colors
+  const activeColor = theme === "dark" ? "#60A5FA" : "#42B0ED";
+  const inactiveColor = theme === "dark" ? "#9CA3AF" : "#7C7C7C";
+  const tabBarBgColor = theme === "dark" ? "#1F2937" : "#FFFFFF";
 
   if (isLoading) {
     return (
@@ -55,9 +62,14 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "#42B0ED",
-        tabBarInactiveTintColor: "#7C7C7C",
-        tabBarStyle: { paddingBottom: 4, minHeight: 60 },
+        tabBarActiveTintColor: activeColor,
+        tabBarInactiveTintColor: inactiveColor,
+        tabBarStyle: {
+          paddingBottom: 4,
+          minHeight: 60,
+          backgroundColor: tabBarBgColor,
+          borderTopColor: theme === "dark" ? "#374151" : "#E5E7EB",
+        },
       }}
     >
       {filteredTabs.map((tab) => (

@@ -27,6 +27,7 @@ import { format } from "date-fns";
 import type { RouterOutputs } from "@acme/api";
 
 import { api } from "~/utils/api";
+import { TASK_STATUSES } from "~/utils/constants";
 import { useTheme } from "~/utils/ThemeProvider";
 import { AnimatedListItem } from "~/components/ui/MotionComponents";
 
@@ -42,6 +43,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({ item, index = 0 }) => {
   const utils = api.useUtils();
   const toast = useToast();
   const { theme } = useTheme();
+  const isDone = item.status === "DONE";
 
   const updateTaskStatusMutation = api.task.update.useMutation({
     onSuccess: async () => {
@@ -103,25 +105,59 @@ export const TaskItem: React.FC<TaskItemProps> = ({ item, index = 0 }) => {
     }
   };
 
+  // Get text and container styles based on completion status
+  const getTextStyle = (isDone: boolean) => {
+    return {
+      textDecorationLine: isDone
+        ? ("line-through" as const)
+        : ("none" as const),
+      color: isDone
+        ? theme === "dark"
+          ? "#6B7280"
+          : "#9CA3AF" // More grey when done
+        : theme === "dark"
+          ? "#FFFFFF"
+          : "#1F2937", // Normal color when not done
+    };
+  };
+
+  const getDescriptionStyle = (isDone: boolean) => {
+    return {
+      textDecorationLine: isDone
+        ? ("line-through" as const)
+        : ("none" as const),
+      color: isDone
+        ? theme === "dark"
+          ? "#6B7280"
+          : "#9CA3AF" // More grey when done
+        : theme === "dark"
+          ? "#E5E7EB"
+          : "#6B7280", // Normal color when not done
+    };
+  };
+
+  const getContainerStyle = (isDone: boolean) => {
+    return {
+      backgroundColor: isDone
+        ? theme === "dark"
+          ? "#1a2026"
+          : "#F3F4F6" // Slightly darker/lighter when done
+        : theme === "dark"
+          ? "#1F2937"
+          : "#FFFFFF", // Normal color when not done
+      borderColor: theme === "dark" ? "#4B5563" : "#E5E7EB",
+      opacity: isDone ? 0.8 : 1,
+    };
+  };
+
   return (
     <AnimatedListItem
       delay={0.1 + index * 0.05}
-      style={[
-        styles.itemContainer,
-        {
-          backgroundColor: theme === "dark" ? "#1F2937" : "#FFFFFF",
-          borderColor: theme === "dark" ? "#374151" : "#E5E7EB",
-        },
-      ]}
+      style={[styles.itemContainer, getContainerStyle(isDone)]}
     >
       <VStack space="sm">
         <HStack justifyContent="space-between" alignItems="center">
-          <Heading
-            size="sm"
-            flex={1}
-            mr="$2"
-            style={{ color: theme === "dark" ? "#F3F4F6" : "#1F2937" }}
-          >
+          <Heading size="sm" flex={1} mr="$2" style={getTextStyle(isDone)}>
             {item.title}
           </Heading>
           <Select
@@ -130,8 +166,17 @@ export const TaskItem: React.FC<TaskItemProps> = ({ item, index = 0 }) => {
             isDisabled={updateTaskStatusMutation.isLoading}
             minWidth={120}
           >
-            <SelectTrigger variant="outline" size="sm">
-              <SelectInput placeholder="Status" />
+            <SelectTrigger
+              variant="outline"
+              size="sm"
+              style={{
+                borderColor: theme === "dark" ? "#4B5563" : "#E5E7EB",
+              }}
+            >
+              <SelectInput
+                placeholder="Status"
+                color={theme === "dark" ? "#F9FAFB" : "#374151"}
+              />
             </SelectTrigger>
             <SelectPortal>
               <SelectBackdrop />
@@ -139,24 +184,19 @@ export const TaskItem: React.FC<TaskItemProps> = ({ item, index = 0 }) => {
                 <SelectDragIndicatorWrapper>
                   <SelectDragIndicator />
                 </SelectDragIndicatorWrapper>
-                {(["TODO", "IN_PROGRESS", "DONE"] as const).map(
-                  (status: TaskStatus) => (
-                    <SelectItem
-                      key={status}
-                      label={status.replace("_", " ")}
-                      value={status}
-                    />
-                  ),
-                )}
+                {TASK_STATUSES.map((status: TaskStatus) => (
+                  <SelectItem
+                    key={status}
+                    label={status.replace("_", " ")}
+                    value={status}
+                  />
+                ))}
               </SelectContent>
             </SelectPortal>
           </Select>
         </HStack>
         {item.description && (
-          <Text
-            size="sm"
-            style={{ color: theme === "dark" ? "#D1D5DB" : "#6B7280" }}
-          >
+          <Text size="sm" style={getDescriptionStyle(isDone)}>
             {item.description}
           </Text>
         )}
@@ -167,7 +207,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({ item, index = 0 }) => {
         >
           <Text
             size="xs"
-            style={{ color: theme === "dark" ? "#9CA3AF" : "#6B7280" }}
+            style={{ color: theme === "dark" ? "#D1D5DB" : "#6B7280" }}
           >
             Due: {item.dueDate ? format(new Date(item.dueDate), "P") : "N/A"}
             {item.isRecurring && ` (${item.recurringType})`}
@@ -184,7 +224,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({ item, index = 0 }) => {
         {item.isRecurring && item.nextOccurrence && (
           <Text
             size="xs"
-            style={{ color: theme === "dark" ? "#60A5FA" : "#3B82F6" }}
+            style={{ color: theme === "dark" ? "#93C5FD" : "#3B82F6" }}
           >
             Next: {format(new Date(item.nextOccurrence), "P")}
           </Text>
