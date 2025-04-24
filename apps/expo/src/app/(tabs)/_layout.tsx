@@ -2,7 +2,6 @@ import { Redirect, Tabs } from "expo-router";
 import { Box, Center, Spinner, Text } from "@gluestack-ui/themed";
 import Home from "assets/icons/home.svg";
 import Profile from "assets/icons/profile.svg";
-import Updates from "assets/icons/updates.svg";
 import { nanoid } from "nanoid/non-secure";
 
 import { api } from "~/utils/api";
@@ -20,11 +19,6 @@ const TABS: readonly TabDefinition[] = [
     name: "tasks/index",
     label: "Tasks",
     icon: Home,
-  },
-  {
-    name: "updates/index",
-    label: "Updates",
-    icon: Updates,
   },
   {
     name: "profile/index",
@@ -46,7 +40,7 @@ export default function TabsLayout() {
     );
   }
 
-  if (isError || !session?.user) {
+  if (isError || !session?.user.id) {
     return <Redirect href="/(auth)/signin" />;
   }
 
@@ -63,7 +57,7 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarActiveTintColor: "#42B0ED",
         tabBarInactiveTintColor: "#7C7C7C",
-        tabBarStyle: { paddingBottom: 8, minHeight: 78 },
+        tabBarStyle: { paddingBottom: 4, minHeight: 60 },
       }}
     >
       {filteredTabs.map((tab) => (
@@ -76,12 +70,13 @@ export default function TabsLayout() {
               <Center
                 style={{
                   marginBottom: focused ? -14 : 14,
+                  width: 100,
                 }}
               >
                 {focused && (
                   <Box
                     bg={color}
-                    marginTop="-$6"
+                    marginTop="-$4"
                     marginBottom="$2"
                     h="$2"
                     w="$12"
