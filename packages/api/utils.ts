@@ -25,7 +25,9 @@ export const calculateNextOccurrence = (
 // Can use this function below or use Expo's Push Notification Tool from: https://expo.dev/notifications
 export async function sendPushNotification(message: ExpoNotificationMessage) {
   try {
-    await fetch("https://exp.host/--/api/v2/push/send", {
+    console.log("Sending push notification to:", message.to);
+
+    const response = await fetch("https://exp.host/--/api/v2/push/send", {
       method: "POST",
       headers: {
         Accept: "application/json",
@@ -34,7 +36,21 @@ export async function sendPushNotification(message: ExpoNotificationMessage) {
       },
       body: JSON.stringify(message),
     });
+
+    const responseData = await response.json();
+    console.log("Push notification response:", responseData);
+
+    if (!response.ok) {
+      console.error("Push notification failed:", responseData);
+      return { success: false, data: responseData };
+    }
+
+    return { success: true, data: responseData };
   } catch (error) {
-    console.log("sendPushNotification Error: ", JSON.stringify(error, null, 2));
+    console.error(
+      "sendPushNotification Error: ",
+      JSON.stringify(error, null, 2),
+    );
+    return { success: false, error };
   }
 }

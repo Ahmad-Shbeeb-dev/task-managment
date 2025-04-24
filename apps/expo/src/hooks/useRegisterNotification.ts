@@ -40,10 +40,19 @@ async function registerForPushNotificationsAsync() {
       alert("Failed to get push token for push notification!");
       return;
     }
-    token = await Notifications.getExpoPushTokenAsync({
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-      projectId: Constants.expoConfig!.extra!.eas.projectId,
-    });
+    try {
+      // Make sure to use the correct project ID from expo config
+      const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+      console.log("Using project ID:", projectId);
+
+      token = await Notifications.getExpoPushTokenAsync({
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+        projectId: Constants.expoConfig!.extra!.eas.projectId,
+      });
+      console.log("Push token obtained:", token);
+    } catch (error) {
+      console.error("Error getting push token:", error);
+    }
     // console.log("registerForPushNotificationsAsync:", token);
   } else {
     alert("Must use physical device for Push Notifications");
@@ -64,20 +73,35 @@ export const useRegisterNotification = () => {
   const utils = api.useUtils();
 
   useEffect(() => {
+    let isMounted = true;
+
     async function registerForNotifications() {
       try {
         const token = await registerForPushNotificationsAsync();
-        if (!token)
-          throw new Error(
-            "useRegisterNotification -> registerForNotifications error!!",
-          );
+        if (!isMounted) return;
 
+        if (!token) {
+          console.error("Failed to get notification token");
+          return;
+        }
+
+        console.log("Setting token in state:", token);
         setExpoPushToken(token);
-        upsertNotificationTokenMutation({ notificationToken: token });
+
+        // Store token in backend
+        upsertNotificationTokenMutation(
+          { notificationToken: token },
+          {
+            onSuccess: () => console.log("Token saved to backend successfully"),
+            onError: (err) =>
+              console.error("Error saving token to backend:", err),
+          },
+        );
 
         notificationListener.current =
           Notifications.addNotificationReceivedListener(
             async (notification) => {
+              console.log("Notification received in foreground:", notification);
               //action when receiving notifiction and the app in foreground : refetch Today's news
               setNotification(notification);
               await utils.invalidate();
@@ -86,7 +110,7 @@ export const useRegisterNotification = () => {
 
         responseListener.current =
           Notifications.addNotificationResponseReceivedListener((response) => {
-            console.log("useRegisterNotification:", response);
+            console.log("User interacted with notification:", response);
           });
       } catch (error) {
         console.error("Error registering for notifications:", error);
@@ -96,10 +120,15 @@ export const useRegisterNotification = () => {
     void registerForNotifications();
 
     return () => {
-      Notifications.removeNotificationSubscription(
-        notificationListener.current!,
-      );
-      Notifications.removeNotificationSubscription(responseListener.current!);
+      isMounted = false;
+      if (notificationListener.current) {
+        Notifications.removeNotificationSubscription(
+          notificationListener.current,
+        );
+      }
+      if (responseListener.current) {
+        Notifications.removeNotificationSubscription(responseListener.current);
+      }
     };
   }, []);
 

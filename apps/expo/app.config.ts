@@ -20,6 +20,7 @@ const defineConfig = (): ExpoConfig => ({
   ios: {
     supportsTablet: true,
     bundleIdentifier: "com.task.managment",
+    buildNumber: "1.0.0",
   },
   android: {
     adaptiveIcon: {
@@ -28,11 +29,17 @@ const defineConfig = (): ExpoConfig => ({
     },
     package: "com.task.managment",
     googleServicesFile:
-      "/home/ahmad/Projects/task-managment-zart/apps/expo/google-services.json",
+      process.env.GOOGLE_SERVICES_JSON ?? // for cloud EAS build
+      "/home/ahmad/Projects/MERN-Task3/apps/expo/google-services.json", // for local
+    versionCode: 1,
+    permissions: [
+      "android.permission.RECEIVE_BOOT_COMPLETED",
+      "android.permission.VIBRATE",
+    ],
   },
   extra: {
     eas: {
-      projectId: "120c6c7d-3a03-4a2f-a434-a5bd28a554b4",
+      projectId: "5dbe962e-e536-4d15-b448-d118c89124bc",
     },
   },
   experiments: {
@@ -62,7 +69,22 @@ const defineConfig = (): ExpoConfig => ({
         initialOrientation: "DEFAULT",
       },
     ],
+    [
+      "expo-notifications",
+      {
+        icon: "./assets/icon.png",
+        color: "#ffffff",
+        sounds: [],
+      },
+    ],
   ],
+  notification: {
+    icon: "./assets/icon.png",
+    color: "#ffffff",
+    iosDisplayInForeground: true,
+    androidMode: "default",
+    androidCollapsedTitle: "Task Management",
+  },
 });
 
 export default defineConfig;
