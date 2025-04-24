@@ -11,7 +11,7 @@ const defineConfig = (): ExpoConfig => ({
   splash: {
     image: "./assets/icon.png",
     resizeMode: "contain",
-    backgroundColor: "#1F104A",
+    backgroundColor: "#0e3e90",
   },
   updates: {
     fallbackToCacheTimeout: 0,
@@ -25,7 +25,7 @@ const defineConfig = (): ExpoConfig => ({
   android: {
     adaptiveIcon: {
       foregroundImage: "./assets/icon.png",
-      backgroundColor: "#1F104A",
+      backgroundColor: "#0e3e90",
     },
     package: "com.task.managment",
     googleServicesFile:
