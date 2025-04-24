@@ -38,7 +38,6 @@ export async function sendPushNotification(message: ExpoNotificationMessage) {
     });
 
     const responseData = await response.json();
-    console.log("Push notification response:", responseData);
 
     if (!response.ok) {
       console.error("Push notification failed:", responseData);

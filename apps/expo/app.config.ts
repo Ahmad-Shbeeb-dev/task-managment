@@ -28,9 +28,7 @@ const defineConfig = (): ExpoConfig => ({
       backgroundColor: "#1F104A",
     },
     package: "com.task.managment",
-    googleServicesFile:
-      process.env.GOOGLE_SERVICES_JSON ?? // for cloud EAS build
-      "/home/ahmad/Projects/MERN-Task3/apps/expo/google-services.json", // for local
+    googleServicesFile: process.env.GOOGLE_SERVICES_JSON,
     versionCode: 1,
     permissions: [
       "android.permission.RECEIVE_BOOT_COMPLETED",

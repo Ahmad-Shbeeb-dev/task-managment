@@ -85,7 +85,6 @@ export const useRegisterNotification = () => {
           return;
         }
 
-        console.log("Setting token in state:", token);
         setExpoPushToken(token);
 
         // Store token in backend
@@ -99,14 +98,12 @@ export const useRegisterNotification = () => {
         );
 
         notificationListener.current =
-          Notifications.addNotificationReceivedListener(
-            async (notification) => {
-              console.log("Notification received in foreground:", notification);
-              //action when receiving notifiction and the app in foreground : refetch Today's news
-              setNotification(notification);
-              await utils.invalidate();
-            },
-          );
+          Notifications.addNotificationReceivedListener((notification) => {
+            console.log("Notification received in foreground:", notification);
+            //action when receiving notifiction and the app in foreground : refetch Today's news
+            setNotification(notification);
+            void utils.task.getAll.invalidate();
+          });
 
         responseListener.current =
           Notifications.addNotificationResponseReceivedListener((response) => {

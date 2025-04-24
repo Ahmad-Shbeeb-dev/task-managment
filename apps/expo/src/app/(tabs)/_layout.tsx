@@ -30,11 +30,11 @@ const TABS: readonly TabDefinition[] = [
 
 export default function TabsLayout() {
   const { expoPushToken, notification } = useRegisterNotification();
-  console.log(
-    "🚀 ~ TabsLayout ~ expoPushToken, notification :",
-    expoPushToken,
-    notification,
-  );
+  // console.log(
+  //   "🚀 ~ TabsLayout ~ expoPushToken, notification :",
+  //   expoPushToken,
+  //   notification,
+  // );
   const { theme } = useTheme();
 
   const { data: session, isLoading, isError } = api.auth.getSession.useQuery();

@@ -25,7 +25,10 @@
     "production": {
       "extends": "base",
       // "developmentClient": true
-      "android": { "buildType": "apk" }
+      "android": { "buildType": "apk" },
+      "env": {
+        "GOOGLE_SERVICES_JSON": "./google-services.json"
+      }
     }
   },
   "submit": {

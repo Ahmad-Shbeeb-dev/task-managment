@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import type { TaskStatus } from "@acme/db";
 
-import { calculateNextOccurrence } from "../../utils";
+import { calculateNextOccurrence, sendPushNotification } from "../../utils";
 import {
   createTRPCRouter,
   protectedProcedure,
@@ -67,6 +67,30 @@ export const taskRouter = createTRPCRouter({
           nextOccurrence: nextOccurrence,
         },
       });
+
+      // Send push notification to the assigned user
+      if (input.assignedToId) {
+        const userToNotify = await ctx.prisma.user.findUnique({
+          where: { id: input.assignedToId },
+        });
+
+        if (!userToNotify?.notificationToken) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "User has no notification token.",
+          });
+        }
+
+        await sendPushNotification({
+          to: userToNotify.notificationToken,
+          title: "New Task Assigned",
+          body: `You have been assigned a new task: ${input.title}`,
+          data: {
+            taskId: task.id,
+          },
+        });
+      }
+
       return task;
     }),
 
@@ -201,6 +225,30 @@ export const taskRouter = createTRPCRouter({
           nextOccurrence: nextOccurrence,
         },
       });
+
+      // Send push notification to the assigned user
+      if (input.assignedToId) {
+        const userToNotify = await ctx.prisma.user.findUnique({
+          where: { id: input.assignedToId },
+        });
+
+        if (!userToNotify?.notificationToken) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "User has no notification token.",
+          });
+        }
+
+        await sendPushNotification({
+          to: userToNotify.notificationToken,
+          title: "New Task Assigned",
+          body: `You have been assigned a new task: ${input.title}`,
+          data: {
+            taskId: task.id,
+          },
+        });
+      }
+
       return updatedTask;
     }),
 
