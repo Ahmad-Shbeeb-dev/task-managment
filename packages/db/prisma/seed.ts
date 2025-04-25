@@ -46,20 +46,18 @@ async function main() {
 
   await prisma.passwordReset.deleteMany({
     where: {
-      OR: [
-        { User: { email: { in: ["user@test.com"] } } },
-        { User: { id: { notIn: [adminId] } } },
-      ],
+      OR: [{ User: { id: { notIn: [adminId] } } }],
     },
   });
-  await prisma.task.deleteMany({
-    where: {
-      assignedTo: { email: "user@test.com" },
-    },
-  });
+  await prisma.task.deleteMany();
+  // await prisma.account.deleteMany({
+  //   where: {
+  //     id: { notIn: [adminId] },
+  //   },
+  // });
   await prisma.user.deleteMany({
     where: {
-      OR: [{ email: { in: ["user@test.com"] } }, { id: { notIn: [adminId] } }],
+      id: { notIn: [adminId] },
     },
   });
 
