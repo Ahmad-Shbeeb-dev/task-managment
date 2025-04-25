@@ -24,6 +24,8 @@ export default function RootLayout() {
             <Stack
               screenOptions={{
                 headerShown: false,
+                statusBarColor: "#1F2937",
+                // statusBarTranslucent: false,
               }}
             />
             <StatusBar />

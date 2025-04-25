@@ -6,6 +6,7 @@ import { nanoid } from "nanoid/non-secure";
 
 import { api } from "~/utils/api";
 import { useTheme } from "~/utils/ThemeProvider";
+import { LoadingSpinner } from "~/components/LoadingSpinner";
 import { useRegisterNotification } from "~/hooks/useRegisterNotification";
 
 interface TabDefinition {
@@ -45,11 +46,7 @@ export default function TabsLayout() {
   const tabBarBgColor = theme === "dark" ? "#1F2937" : "#FFFFFF";
 
   if (isLoading) {
-    return (
-      <Center flex={1}>
-        <Spinner size="large" />
-      </Center>
-    );
+    return <LoadingSpinner />;
   }
 
   if (isError || !session?.user.id) {
@@ -86,7 +83,7 @@ export default function TabsLayout() {
             tabBarIcon: ({ color, focused }) => (
               <Center
                 style={{
-                  marginBottom: focused ? -14 : 14,
+                  marginBottom: focused ? -18 : 18,
                   width: 100,
                 }}
               >

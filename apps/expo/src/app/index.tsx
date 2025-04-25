@@ -2,17 +2,21 @@ import React, { useLayoutEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, Stack } from "expo-router";
 
-import { useAuth } from "~/utils/auth";
-import { WelcomeScreen } from "~/components/WelcomeScreen";
+import { getToken } from "~/utils/session-store";
+import { LoadingSpinner } from "~/components/LoadingSpinner";
 
 export default function Index() {
-  const session = useAuth();
-
   useLayoutEffect(() => {
-    if (session?.user) {
-      router.replace("/tasks/");
-    }
-  }, [session?.user]);
+    const getTokenAsync = async () => {
+      const secureToken = await getToken();
+      if (secureToken) {
+        router.replace("/tasks/");
+      } else {
+        router.replace("/(auth)/signin/");
+      }
+    };
+    void getTokenAsync();
+  }, []);
 
   return (
     <SafeAreaView>
@@ -20,10 +24,10 @@ export default function Index() {
         options={{
           headerShown: false,
           animation: "slide_from_right",
-          statusBarColor: "#7BC9EF",
+          statusBarColor: "#1F2937",
         }}
       />
-      <WelcomeScreen />
+      <LoadingSpinner />
     </SafeAreaView>
   );
 }
