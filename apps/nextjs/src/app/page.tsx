@@ -8,5 +8,9 @@ export default async function HomePage() {
     redirect("/signin");
   }
 
-  redirect("/dashboard/home");
+  if (session?.user.role === "ADMIN") {
+    redirect("/dashboard/home");
+  } else {
+    redirect("/dashboard/tasks");
+  }
 }

@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import type { z } from "zod";
 
 import { registerUserValidation } from "@acme/api/validations";
+import type { UserRole } from "@acme/db";
 
 import { cn } from "~/utils/ui";
 import { PasswordInput } from "~/components/PasswordInput";
@@ -24,14 +25,13 @@ import {
 import { Input } from "~/components/ui/Input";
 import { Progress } from "~/components/ui/Progress";
 import { useAuth, usePasswordStrength } from "~/hooks";
-import type { Role } from "~/types";
 
 type Inputs = z.infer<typeof registerUserValidation>;
 
 interface Props {
   isSuperAdmin?: boolean;
   userName?: string;
-  userRole?: Role;
+  userRole?: UserRole;
   createdBy?: string;
   setDialogOpened?: Dispatch<SetStateAction<boolean>>;
 }
@@ -65,7 +65,7 @@ export function SignUpForm({
   function onSubmit(data: Inputs) {
     // if (!isLoading) return;
     startTransition(async () => {
-      await signup({ ...data }, { isSuperAdmin: true });
+      await signup({ ...data }, { isSuperAdmin: false });
 
       if (setDialogOpened) setDialogOpened(false);
       // router.push(`${window.location.origin}/teacher/home`);

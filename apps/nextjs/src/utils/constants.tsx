@@ -19,18 +19,21 @@ export const NAVBAR_LINKS: readonly INavbarLink[] = [
     path: "/dashboard/home",
     label: "Home",
     icon: <IconFileAnalytics size={20} stroke={1.5} />,
+    roles: ["ADMIN"],
   },
   {
     id: "tasks",
     path: "/dashboard/tasks",
     label: "Tasks",
     icon: <IconListDetails size={20} stroke={1.5} />,
+    roles: ["ADMIN", "USER"],
   },
   {
     id: "profile",
     path: "/dashboard/profile",
     label: "Profile",
     icon: <IconUserCircle size={20} stroke={1.5} />,
+    roles: ["ADMIN", "USER"],
   },
 ] as const;
 

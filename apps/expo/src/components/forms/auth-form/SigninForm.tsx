@@ -1,4 +1,3 @@
-import { Link } from "expo-router";
 import {
   AlertCircleIcon,
   Box,
@@ -12,12 +11,10 @@ import {
   FormControlErrorText,
   Input,
   InputField,
-  LinkText,
   ScrollView,
   Text,
 } from "@gluestack-ui/themed";
 import { zodResolver } from "@hookform/resolvers/zod";
-import SignIn from "assets/sign-in.svg";
 import { Controller, useForm } from "react-hook-form";
 import type { z } from "zod";
 
@@ -155,9 +152,6 @@ export const SigninForm = () => {
                     </FormControlError>
                   </FormControl>
                 </Box>
-                <Link href="/signin/reset-password/">
-                  <LinkText alignSelf="flex-end">Forgot password?</LinkText>
-                </Link>
 
                 <Button
                   h="$12"
